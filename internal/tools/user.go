@@ -34,22 +34,22 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 		return nil, errors.New("Couldn't hash password")
 	}
 
-	var user User
-
-	if role == nil {
-		user = User {
-			UUID: uuid.NewString(),
-			Username: *username,
-			PasswordHash: hashedPassword,
-		}
-	} else {
-		user = User {
-			UUID: uuid.NewString(),
-			Username: *username,
-			PasswordHash: hashedPassword,
-			RoleID: role.ID,
+	if role.ID == 0 {
+		db.Where("name = ?", "user").First(&role)
+		if role.ID == 0 {
+			return nil, errors.New("Couldn't find the user role")
 		}
 	}
+
+	var user User
+
+	user = User {
+		UUID: uuid.NewString(),
+		Username: *username,
+		PasswordHash: hashedPassword,
+		RoleID: role.ID,
+	}
+		
 
 	db.Create(&user)
 

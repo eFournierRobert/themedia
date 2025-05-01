@@ -43,5 +43,9 @@ func PostUser(context *gin.Context) {
 	context.IndentedJSON(http.StatusCreated, models.UserPostResponse{
 		UUID: createdUser.UUID,
 		Username: createdUser.Username,
+		Role: models.RoleResponse {
+			UUID: role.UUID,
+			Name: role.Name,
+		},
 	})
 }
