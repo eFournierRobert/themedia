@@ -8,31 +8,63 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
+type Role struct {
 	gorm.Model
-	UUID string
-	Username string
-	PasswordHash []byte
+	UUID string `gorm:"type:char(36);uniqueIndex"`
+	Name string
+	Users []User
 }
 
-func CreateUser(username string, password string) (*User, error) {
+type User struct {
+	gorm.Model
+	UUID string `gorm:"type:char(36);uniqueIndex"`
+	Username string
+	PasswordHash []byte
+	RoleID uint
+}
+
+func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	db, err := GetDb()
 	if err != nil {
 		return nil, err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, errors.New("Couldn't hash password")
 	}
 
-	var user User = User {
-		UUID: uuid.NewString(),
-		Username: username,
-		PasswordHash: hashedPassword,
+	var user User
+
+	if role == nil {
+		user = User {
+			UUID: uuid.NewString(),
+			Username: *username,
+			PasswordHash: hashedPassword,
+		}
+	} else {
+		user = User {
+			UUID: uuid.NewString(),
+			Username: *username,
+			PasswordHash: hashedPassword,
+			RoleID: role.ID,
+		}
 	}
 
 	db.Create(&user)
 
 	return &user, nil
+}
+
+func FindRole(uuid *string) (*Role, error) {
+	db, err := GetDb()
+	if err != nil {
+		return nil, err
+	}
+
+	var role Role
+	db.Where("uuid = ?", *uuid).First(&role)
+
+
+	return &role, nil
 }
