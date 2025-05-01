@@ -24,7 +24,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.POST("/users", handlers.PostUser)
+	router.POST("/u", handlers.PostUser)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")
