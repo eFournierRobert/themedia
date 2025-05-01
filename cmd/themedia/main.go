@@ -25,6 +25,7 @@ func main() {
 
 	router := gin.Default()
 
+	router.GET("/u/:uuid", handlers.GetUserWithUUID)
 	router.POST("/u", handlers.PostUser)
 
 	fmt.Println("API started!")

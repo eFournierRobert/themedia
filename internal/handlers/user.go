@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"net/http"
+	"unicode/utf8"
 
-	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/eFournierRobert/themedia/internal/models"
+	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +25,7 @@ func PostUser(context *gin.Context) {
 		return
 	}
 
-	role, err := tools.FindRole(&user.RoleUUID)
+	role, err := tools.FindRoleByUUID(&user.RoleUUID)
 	if err != nil {
 		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse { 
 			Message: "Unknown error",
@@ -48,4 +49,15 @@ func PostUser(context *gin.Context) {
 			Name: role.Name,
 		},
 	})
+}
+
+func GetUserWithUUID(context *gin.Context) {
+	uuid := context.Param("uuid")
+	if utf8.RuneCountInString(uuid) != 36 {
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse {
+			Message: "Please submit a valid UUID",
+		})
+	}
+
+	
 }

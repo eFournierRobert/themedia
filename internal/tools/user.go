@@ -23,6 +23,13 @@ type User struct {
 	RoleID uint
 }
 
+type FullUser struct {
+	ID uint
+	UUID string
+	Username string
+	Role Role
+}
+
 func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	db, err := GetDb()
 	if err != nil {
@@ -56,7 +63,38 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	return &user, nil
 }
 
-func FindRole(uuid *string) (*Role, error) {
+func FindFullUserByUUID(uuid *string) (*User, error) {
+	db, err := GetDb()
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	db.Table("users").Select(
+		"user.id", 
+		"user.uuid", 
+		"user.username", 
+		"role.uuid", 
+		"role.name",
+	).Where("uuid = ?", *uuid).Group("roles").First(&user)
+
+	return &user, nil
+}
+
+func FindRoleByID(id int) (*Role, error) {
+	db, err := GetDb()
+	if err != nil {
+		return nil, err
+	}
+
+	var role Role
+	db.Where("id = ?", id).First(&role)
+
+
+	return &role, nil
+}
+
+func FindRoleByUUID(uuid *string) (*Role, error) {
 	db, err := GetDb()
 	if err != nil {
 		return nil, err
