@@ -6,7 +6,7 @@ type UserPost struct {
 	RoleUUID string `json:"roleUuid"`
 }
 
-type UserPostResponse struct {
+type UserResponse struct {
 	UUID string `json:"uuid"`
 	Username string `json:"username"`
 	Role RoleResponse `json:"role"`

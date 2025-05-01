@@ -25,9 +25,10 @@ type User struct {
 
 type FullUser struct {
 	ID uint
-	UUID string
+	UserUUID string
 	Username string
-	Role Role
+	RoleUUID string
+	Name string
 }
 
 func CreateUser(username *string, password *string, role *Role) (*User, error) {
@@ -63,22 +64,22 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	return &user, nil
 }
 
-func FindFullUserByUUID(uuid *string) (*User, error) {
+func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 	db, err := GetDb()
 	if err != nil {
 		return nil, err
 	}
 
-	var user User
+	var fullUser FullUser
 	db.Table("users").Select(
-		"user.id", 
-		"user.uuid", 
-		"user.username", 
-		"role.uuid", 
-		"role.name",
-	).Where("uuid = ?", *uuid).Group("roles").First(&user)
+		"users.id", 
+		"users.uuid AS user_uuid", 
+		"users.username", 
+		"roles.uuid AS role_uuid", 
+		"roles.name",
+	).Where("users.uuid = ?", *uuid).Joins("JOIN roles ON roles.id = users.role_id").First(&fullUser)
 
-	return &user, nil
+	return &fullUser, nil
 }
 
 func FindRoleByID(id int) (*Role, error) {

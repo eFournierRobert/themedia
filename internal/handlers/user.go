@@ -41,7 +41,7 @@ func PostUser(context *gin.Context) {
 		return
 	}
 
-	context.IndentedJSON(http.StatusCreated, models.UserPostResponse{
+	context.IndentedJSON(http.StatusCreated, models.UserResponse{
 		UUID: createdUser.UUID,
 		Username: createdUser.Username,
 		Role: models.RoleResponse {
@@ -59,5 +59,27 @@ func GetUserWithUUID(context *gin.Context) {
 		})
 	}
 
+	fullUser, err := tools.FindFullUserByUUID(&uuid)
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse { 
+			Message: "Unknown error",
+		})
+		return
+	}
+
+	if fullUser == nil{
+		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse {
+			Message: "User not found",
+		})
+		return
+	}
 	
+	context.IndentedJSON(http.StatusFound, models.UserResponse {
+		UUID: fullUser.UserUUID,
+		Username: fullUser.Username,
+		Role: models.RoleResponse{
+			UUID: fullUser.RoleUUID,
+			Name: fullUser.Name,
+		},
+	})
 }
