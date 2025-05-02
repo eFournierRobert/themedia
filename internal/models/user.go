@@ -8,6 +8,7 @@ type UserPost struct {
 	UUID     string `json:"uuid"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Bio      string `json:"bio"`
 	RoleUUID string `json:"roleUuid"`
 }
 
@@ -16,6 +17,7 @@ type UserPost struct {
 type UserResponse struct {
 	UUID     string       `json:"uuid"`
 	Username string       `json:"username"`
+	Bio      string       `json:"bio"`
 	Role     RoleResponse `json:"role"`
 }
 

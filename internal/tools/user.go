@@ -25,6 +25,7 @@ type User struct {
 	Username     string
 	PasswordHash []byte
 	RoleID       uint
+	Bio          string
 }
 
 // FullUser is the struct responsible to store the return value
@@ -34,6 +35,7 @@ type FullUser struct {
 	ID       uint
 	UserUUID string
 	Username string
+	Bio      string
 	RoleUUID string
 	Name     string
 }
@@ -77,6 +79,7 @@ func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 		"users.id",
 		"users.uuid AS user_uuid",
 		"users.username",
+		"users.bio",
 		"roles.uuid AS role_uuid",
 		"roles.name",
 	).Where("users.uuid = ?", *uuid).Joins("JOIN roles ON roles.id = users.role_id").First(&fullUser)
