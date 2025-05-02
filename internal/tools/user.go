@@ -109,3 +109,10 @@ func VerifyPassword(uuid *string, password *string) (bool, error) {
 
 	return true, nil
 }
+
+func DoesUserExist(uuid string) bool {
+	var user User
+	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&user)
+
+	return user.ID != 0
+}
