@@ -32,17 +32,13 @@ func PostUser(context *gin.Context) {
 
 	role, err := tools.FindRoleByUUID(&user.RoleUUID)
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse { 
-			Message: "Unknown error",
-		})
+		UnknownError(context)
 		return
 	}
 
 	createdUser, err := tools.CreateUser(&user.Username, &user.Password, role)
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse { 
-			Message: "Unknown error",
-		})
+		UnknownError(context)
 		return
 	}
 
@@ -68,9 +64,7 @@ func GetUserWithUUID(context *gin.Context) {
 
 	fullUser, err := tools.FindFullUserByUUID(&uuid)
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse { 
-			Message: "Unknown error",
-		})
+		UnknownError(context)
 		return
 	}
 
