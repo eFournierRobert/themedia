@@ -17,10 +17,10 @@ func Authorization(context *gin.Context) {
 		return
 	}
 
-	token, err := jwt.Parse(tokenString, func (token *jwt.Token) (any, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
-	if err != nil || token == nil{
+	if err != nil || token == nil {
 		context.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

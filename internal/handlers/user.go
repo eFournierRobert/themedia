@@ -92,35 +92,35 @@ func GetUserWithUUID(context *gin.Context) {
 func PostLogin(context *gin.Context) {
 	var user models.UserPost
 	if err := context.BindJSON(&user); err != nil {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse {
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Couldn't read credentials",
 		})
 		return
 	}
 
-	isCorrect, err :=tools.VerifyPassword(&user.UUID, &user.Password)
+	isCorrect, err := tools.VerifyPassword(&user.UUID, &user.Password)
 	if err != nil || !isCorrect {
-		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse {
+		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
 			Message: "Login failed",
 		})
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.UUID,
 		"exp": time.Now().Add(time.Hour * 12).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse {
+		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
 			Message: "Login failed",
 		})
 		return
 	}
 
 	context.SetSameSite(http.SameSiteLaxMode)
-	context.SetCookie("Authorization", tokenString, 3600 * 12, "", "", true, true)
+	context.SetCookie("Authorization", tokenString, 3600*12, "", "", true, true)
 
 	context.IndentedJSON(http.StatusOK, "Login successful")
 }

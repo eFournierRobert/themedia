@@ -97,7 +97,7 @@ func FindRoleByUUID(uuid *string) (*Role, error) {
 func VerifyPassword(uuid *string, password *string) (bool, error) {
 	var user User
 	DB.Table("users").Select("id", "password_hash").Where("uuid = ?", uuid).First(&user)
-	
+
 	if user.ID == 0 {
 		return false, errors.New("Did not find user")
 	}
