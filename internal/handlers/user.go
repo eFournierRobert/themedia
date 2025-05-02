@@ -89,6 +89,9 @@ func GetUserWithUUID(context *gin.Context) {
 	})
 }
 
+// PostLogin is the function that handles the API POST /u/login.
+// It will check the credentials and create a cookie with the
+// JWT token inside.
 func PostLogin(context *gin.Context) {
 	var user models.UserPost
 	if err := context.BindJSON(&user); err != nil {
@@ -123,4 +126,12 @@ func PostLogin(context *gin.Context) {
 	context.SetCookie("Authorization", tokenString, 3600*12, "", "", true, true)
 
 	context.IndentedJSON(http.StatusOK, "Login successful")
+}
+
+// PostLogout is the function that logs out the user.
+// It sets the maximum age of the cookie containing the
+// JWT token to -1.
+func PostLogout(context *gin.Context) {
+	context.SetCookie("Authorization", "", -1, "", "", true, true)
+	context.IndentedJSON(http.StatusOK, "Logout successful")
 }

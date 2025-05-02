@@ -10,6 +10,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Authorization is the function that checks if the
+// browser sending the request has the cookie containing the
+// JWT token, then checks it to see if it is correct or not.
+// If it fails the checks, it will return an HTTP 401. If
+// successful, it will continue to the handler function
+// for that specific endpoint.
 func Authorization(context *gin.Context) {
 	tokenString, err := context.Cookie("Authorization")
 	if err != nil {

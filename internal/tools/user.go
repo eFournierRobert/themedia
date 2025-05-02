@@ -94,6 +94,9 @@ func FindRoleByUUID(uuid *string) (*Role, error) {
 	return &role, nil
 }
 
+// VerifyPassword is the function that receives a raw passwords and
+// compares it to the hashed one in the database for the user with the given
+// UUID. It will return a boolean or an error.
 func VerifyPassword(uuid *string, password *string) (bool, error) {
 	var user User
 	DB.Table("users").Select("id", "password_hash").Where("uuid = ?", uuid).First(&user)
@@ -110,6 +113,8 @@ func VerifyPassword(uuid *string, password *string) (bool, error) {
 	return true, nil
 }
 
+// DoesUserExist is the function that checks if a user with the given
+// UUID exist in the database. It returns a boolean.
 func DoesUserExist(uuid string) bool {
 	var user User
 	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&user)
