@@ -9,23 +9,15 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	"github.com/joho/godotenv"
 )
+
+var DB *gorm.DB
 
 // GetDb is a function that gets the gorm.DB we need to
 // interact with the database. It will get the database auth
 // and the database name from the build/.env file.
-// It will return a pointer to the gorm.DB or an error if one
-// occured.
-func GetDb() (*gorm.DB, error) {
-	err := godotenv.Load("build/.env")
-
-	if err != nil {
-		log.Fatal("Couldn't read .env file")
-		return nil, errors.New("Couldn't read .env file")
-	}
-
+// It will return an error if one occured.
+func GetDb() error {
 	db_username := os.Getenv("MYSQL_USER")
 	db_password := os.Getenv("MYSQL_PASSWORD")
 	db_name := os.Getenv("MYSQL_DATABASE")
@@ -36,8 +28,9 @@ func GetDb() (*gorm.DB, error) {
 
 	if err != nil {
 		log.Fatal("Couldn't connect to database")
-		return nil, errors.New("Couldn't connect to database")
+		return errors.New("Couldn't connect to database")
 	}
 
-	return db, nil
+	DB = db
+	return nil
 }

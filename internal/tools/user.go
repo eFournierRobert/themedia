@@ -42,18 +42,13 @@ type FullUser struct {
 // the password passed must be in plain text since function will be hashing.
 // It returns a pointer to a User struct or an error.
 func CreateUser(username *string, password *string, role *Role) (*User, error) {
-	db, err := GetDb()
-	if err != nil {
-		return nil, err
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, errors.New("Couldn't hash password")
 	}
 
 	if role.ID == 0 {
-		db.Where("name = ?", "user").First(&role)
+		DB.Where("name = ?", "user").First(&role)
 		if role.ID == 0 {
 			return nil, errors.New("Couldn't find the user role")
 		}
@@ -68,7 +63,7 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 		RoleID:       role.ID,
 	}
 
-	db.Create(&user)
+	DB.Create(&user)
 
 	return &user, nil
 }
@@ -77,13 +72,8 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 // has the given UUID in the database.
 // It will return a pointer to a FullUser struct or an error.
 func FindFullUserByUUID(uuid *string) (*FullUser, error) {
-	db, err := GetDb()
-	if err != nil {
-		return nil, err
-	}
-
 	var fullUser FullUser
-	db.Table("users").Select(
+	DB.Table("users").Select(
 		"users.id",
 		"users.uuid AS user_uuid",
 		"users.username",
@@ -98,13 +88,8 @@ func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 // the role that has the given UUID in the database.
 // It will return a pointer to a Role struct or an error.
 func FindRoleByUUID(uuid *string) (*Role, error) {
-	db, err := GetDb()
-	if err != nil {
-		return nil, err
-	}
-
 	var role Role
-	db.Where("uuid = ?", *uuid).First(&role)
+	DB.Where("uuid = ?", *uuid).First(&role)
 
 	return &role, nil
 }
