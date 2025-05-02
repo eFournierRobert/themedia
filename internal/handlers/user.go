@@ -4,7 +4,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -114,7 +113,6 @@ func PostLogin(context *gin.Context) {
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		fmt.Println(err.Error())
 		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse {
 			Message: "Login failed",
 		})
