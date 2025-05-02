@@ -1,3 +1,5 @@
+// Package main is the main package of the API.
+// The app starts here.
 package main
 
 import (
@@ -8,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// startupDbMigration is the function responsible for doing
+// a migration on the database at startup.
+// If it isn't able to get access to the database, it will
+// panic and print the error.
 func startupDbMigration() {
 	db, err := tools.GetDb()
 	if err != nil {

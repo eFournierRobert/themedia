@@ -1,3 +1,5 @@
+// Package tools is the package containing
+// all the request made to the database.
 package tools
 
 import (
@@ -8,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Role is the struct responsible for the table roles in the database.
 type Role struct {
 	gorm.Model
 	UUID string `gorm:"type:char(36);uniqueIndex"`
@@ -15,6 +18,7 @@ type Role struct {
 	Users []User
 }
 
+// User is the struct responsible for the table users in the database.
 type User struct {
 	gorm.Model
 	UUID string `gorm:"type:char(36);uniqueIndex"`
@@ -23,6 +27,9 @@ type User struct {
 	RoleID uint
 }
 
+// FullUser is the struct responsible to store the return value 
+// of a SELECT in the database that has the user information
+// and the role information of that users.
 type FullUser struct {
 	ID uint
 	UserUUID string
@@ -31,6 +38,9 @@ type FullUser struct {
 	Name string
 }
 
+// CreateUser is the function responsible for inserting a new user in the database.
+// the password passed must be in plain text since function will be hashing.
+// It returns a pointer to a User struct or an error.
 func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	db, err := GetDb()
 	if err != nil {
@@ -57,13 +67,15 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 		PasswordHash: hashedPassword,
 		RoleID: role.ID,
 	}
-		
 
 	db.Create(&user)
 
 	return &user, nil
 }
 
+// FindFullUserByUUID is the function responsible for finding the user that 
+// has the given UUID in the database.
+// It will return a pointer to a FullUser struct or an error.
 func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 	db, err := GetDb()
 	if err != nil {
@@ -82,19 +94,9 @@ func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 	return &fullUser, nil
 }
 
-func FindRoleByID(id int) (*Role, error) {
-	db, err := GetDb()
-	if err != nil {
-		return nil, err
-	}
-
-	var role Role
-	db.Where("id = ?", id).First(&role)
-
-
-	return &role, nil
-}
-
+// FindRoleByUUID is the function responsible for finding
+// the role that has the given UUID in the database.
+// It will return a pointer to a Role struct or an error.
 func FindRoleByUUID(uuid *string) (*Role, error) {
 	db, err := GetDb()
 	if err != nil {

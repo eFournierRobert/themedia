@@ -1,3 +1,6 @@
+// Package handlers is the package that handles the API calls. 
+// All functions in the package returns the HTTP code and the
+// JSON response.
 package handlers
 
 import (
@@ -9,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PostUser is the function that handles the API POST /u.
+// It will create a new user in the database.
 func PostUser(context *gin.Context) {
 	var user models.UserPost
 	if err := context.BindJSON(&user); err != nil {
@@ -51,6 +56,8 @@ func PostUser(context *gin.Context) {
 	})
 }
 
+// GetUserWithUUID is the function that handles the API GET /u/{uuid}.
+// It will find the user with that UUID in the database with its role.
 func GetUserWithUUID(context *gin.Context) {
 	uuid := context.Param("uuid")
 	if utf8.RuneCountInString(uuid) != 36 {

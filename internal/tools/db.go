@@ -1,3 +1,5 @@
+// Package tools is the package containing
+// all the request made to the database.
 package tools
 
 import (
@@ -11,6 +13,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// GetDb is a function that gets the gorm.DB we need to
+// interact with the database. It will get the database auth
+// and the database name from the build/.env file.
+// It will return a pointer to the gorm.DB or an error if one 
+// occured.
 func GetDb() (*gorm.DB, error) {
 	err := godotenv.Load("build/.env")
 
