@@ -4,9 +4,9 @@ package main
 
 import (
 	"fmt"
-	
-	"github.com/eFournierRobert/themedia/internal/tools"
+
 	"github.com/eFournierRobert/themedia/internal/handlers"
+	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +26,7 @@ func startupDbMigration() {
 
 func main() {
 	fmt.Println("Starting themedia API...")
-	
+
 	startupDbMigration()
 
 	router := gin.Default()

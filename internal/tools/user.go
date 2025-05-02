@@ -13,29 +13,29 @@ import (
 // Role is the struct responsible for the table roles in the database.
 type Role struct {
 	gorm.Model
-	UUID string `gorm:"type:char(36);uniqueIndex"`
-	Name string
+	UUID  string `gorm:"type:char(36);uniqueIndex"`
+	Name  string
 	Users []User
 }
 
 // User is the struct responsible for the table users in the database.
 type User struct {
 	gorm.Model
-	UUID string `gorm:"type:char(36);uniqueIndex"`
-	Username string
+	UUID         string `gorm:"type:char(36);uniqueIndex"`
+	Username     string
 	PasswordHash []byte
-	RoleID uint
+	RoleID       uint
 }
 
-// FullUser is the struct responsible to store the return value 
+// FullUser is the struct responsible to store the return value
 // of a SELECT in the database that has the user information
 // and the role information of that users.
 type FullUser struct {
-	ID uint
+	ID       uint
 	UserUUID string
 	Username string
 	RoleUUID string
-	Name string
+	Name     string
 }
 
 // CreateUser is the function responsible for inserting a new user in the database.
@@ -61,11 +61,11 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 
 	var user User
 
-	user = User {
-		UUID: uuid.NewString(),
-		Username: *username,
+	user = User{
+		UUID:         uuid.NewString(),
+		Username:     *username,
 		PasswordHash: hashedPassword,
-		RoleID: role.ID,
+		RoleID:       role.ID,
 	}
 
 	db.Create(&user)
@@ -73,7 +73,7 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	return &user, nil
 }
 
-// FindFullUserByUUID is the function responsible for finding the user that 
+// FindFullUserByUUID is the function responsible for finding the user that
 // has the given UUID in the database.
 // It will return a pointer to a FullUser struct or an error.
 func FindFullUserByUUID(uuid *string) (*FullUser, error) {
@@ -84,10 +84,10 @@ func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 
 	var fullUser FullUser
 	db.Table("users").Select(
-		"users.id", 
-		"users.uuid AS user_uuid", 
-		"users.username", 
-		"roles.uuid AS role_uuid", 
+		"users.id",
+		"users.uuid AS user_uuid",
+		"users.username",
+		"roles.uuid AS role_uuid",
 		"roles.name",
 	).Where("users.uuid = ?", *uuid).Joins("JOIN roles ON roles.id = users.role_id").First(&fullUser)
 
@@ -105,7 +105,6 @@ func FindRoleByUUID(uuid *string) (*Role, error) {
 
 	var role Role
 	db.Where("uuid = ?", *uuid).First(&role)
-
 
 	return &role, nil
 }

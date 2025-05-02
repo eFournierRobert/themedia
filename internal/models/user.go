@@ -13,9 +13,9 @@ type UserPost struct {
 // UserResponse is the struct used to serialize
 // the user we want to return.
 type UserResponse struct {
-	UUID string `json:"uuid"`
-	Username string `json:"username"`
-	Role RoleResponse `json:"role"`
+	UUID     string       `json:"uuid"`
+	Username string       `json:"username"`
+	Role     RoleResponse `json:"role"`
 }
 
 // RoleResponse is the struct used to serialize

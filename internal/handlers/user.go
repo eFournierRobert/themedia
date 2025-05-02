@@ -1,4 +1,4 @@
-// Package handlers is the package that handles the API calls. 
+// Package handlers is the package that handles the API calls.
 // All functions in the package returns the HTTP code and the
 // JSON response.
 package handlers
@@ -17,14 +17,14 @@ import (
 func PostUser(context *gin.Context) {
 	var user models.UserPost
 	if err := context.BindJSON(&user); err != nil {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse { 
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Couldn't create user",
 		})
 		return
 	}
 
 	if user.Username == "" || user.Password == "" {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse { 
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Populate username and password for creation",
 		})
 		return
@@ -43,9 +43,9 @@ func PostUser(context *gin.Context) {
 	}
 
 	context.IndentedJSON(http.StatusCreated, models.UserResponse{
-		UUID: createdUser.UUID,
+		UUID:     createdUser.UUID,
 		Username: createdUser.Username,
-		Role: models.RoleResponse {
+		Role: models.RoleResponse{
 			UUID: role.UUID,
 			Name: role.Name,
 		},
@@ -57,7 +57,7 @@ func PostUser(context *gin.Context) {
 func GetUserWithUUID(context *gin.Context) {
 	uuid := context.Param("uuid")
 	if utf8.RuneCountInString(uuid) != 36 {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse {
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Please submit a valid UUID",
 		})
 	}
@@ -68,15 +68,15 @@ func GetUserWithUUID(context *gin.Context) {
 		return
 	}
 
-	if fullUser == nil{
-		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse {
+	if fullUser == nil {
+		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse{
 			Message: "User not found",
 		})
 		return
 	}
-	
-	context.IndentedJSON(http.StatusFound, models.UserResponse {
-		UUID: fullUser.UserUUID,
+
+	context.IndentedJSON(http.StatusFound, models.UserResponse{
+		UUID:     fullUser.UserUUID,
 		Username: fullUser.Username,
 		Role: models.RoleResponse{
 			UUID: fullUser.RoleUUID,
