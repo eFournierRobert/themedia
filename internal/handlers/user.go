@@ -4,12 +4,16 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"time"
 	"unicode/utf8"
 
 	"github.com/eFournierRobert/themedia/internal/models"
 	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // PostUser is the function that handles the API POST /u.
@@ -60,6 +64,7 @@ func GetUserWithUUID(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Please submit a valid UUID",
 		})
+		return
 	}
 
 	fullUser, err := tools.FindFullUserByUUID(&uuid)
@@ -83,4 +88,41 @@ func GetUserWithUUID(context *gin.Context) {
 			Name: fullUser.Name,
 		},
 	})
+}
+
+func PostLogin(context *gin.Context) {
+	var user models.UserPost
+	if err := context.BindJSON(&user); err != nil {
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse {
+			Message: "Couldn't read credentials",
+		})
+		return
+	}
+
+	isCorrect, err :=tools.VerifyPassword(&user.UUID, &user.Password)
+	if err != nil || !isCorrect {
+		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse {
+			Message: "Login failed",
+		})
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
+		"sub": user.UUID,
+		"exp": time.Now().Add(time.Hour * 12).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		fmt.Println(err.Error())
+		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse {
+			Message: "Login failed",
+		})
+		return
+	}
+
+	context.SetSameSite(http.SameSiteLaxMode)
+	context.SetCookie("Authorization", tokenString, 3600 * 12, "", "", true, true)
+
+	context.IndentedJSON(http.StatusOK, "Login successful")
 }

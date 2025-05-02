@@ -5,6 +5,7 @@ package models
 // UserPost is the struct used to deserialize
 // the request body for a new user.
 type UserPost struct {
+	UUID string `json:"uuid"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	RoleUUID string `json:"roleUuid"`

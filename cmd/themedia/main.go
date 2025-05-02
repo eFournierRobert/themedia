@@ -46,6 +46,7 @@ func main() {
 
 	router.GET("/u/:uuid", handlers.GetUserWithUUID)
 	router.POST("/u", handlers.PostUser)
+	router.POST("/u/login", handlers.PostLogin)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")
