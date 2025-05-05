@@ -124,3 +124,15 @@ func DoesUserExist(uuid string) bool {
 
 	return user.ID != 0
 }
+
+// IsUserAdmin takes the given user UUID and checks if the user
+// is an admin or not.
+func IsUserAdmin(uuid string) bool {
+	var user FullUser
+	DB.Table("users").Select(
+		"users.id",
+		"roles.name",
+	).Where("users.uuid = ?", uuid).Joins("JOIN roles on roles.id = users.role_id").First(&user)
+
+	return user.ID != 0 && user.Name == "admin"
+}
