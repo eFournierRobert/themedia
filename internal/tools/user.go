@@ -152,10 +152,12 @@ func DeleteUser(uuid string) error {
 	return nil
 }
 
+// UpdateUser updates the user in the database with the new information received.
+// Returns nil if successful or an error if not.
 func UpdateUser(uuid string, user *models.UserPost) error {
 	var oldUser User
 	var updatedUser User
-	DB.Where("uuid = ?", uuid).First(&oldUser)
+	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
 
 	updatedUser.ID = oldUser.ID
 
