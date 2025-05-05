@@ -5,6 +5,7 @@ package tools
 import (
 	"errors"
 
+	"github.com/eFournierRobert/themedia/internal/models"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -148,5 +149,43 @@ func DeleteUser(uuid string) error {
 	}
 
 	DB.Unscoped().Delete(&user)
+	return nil
+}
+
+func UpdateUser(uuid string, user *models.UserPost) error {
+	var oldUser User
+	var updatedUser User
+	DB.Where("uuid = ?", uuid).First(&oldUser)
+
+	updatedUser.ID = oldUser.ID
+
+	if user.Username != "" {
+		updatedUser.Username = user.Username
+	}
+
+	if user.Password != "" {
+		newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(*&user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return errors.New("Couldn't hash password")
+		}
+
+		updatedUser.PasswordHash = newPasswordHash
+	}
+
+	if user.Bio != "" {
+		updatedUser.Bio = user.Bio
+	}
+
+	if user.RoleUUID != "" {
+		var role Role
+		DB.Table("roles").Select("roles.id").Where("roles.uuid = ?", user.RoleUUID).First(&role)
+		if role.ID == 0 {
+			return errors.New("Role does not exist")
+		}
+
+		updatedUser.RoleID = role.ID
+	}
+
+	DB.Model(&updatedUser).Updates(updatedUser)
 	return nil
 }
