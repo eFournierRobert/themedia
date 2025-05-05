@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/eFournierRobert/themedia/internal/handlers"
+	"github.com/eFournierRobert/themedia/internal/middleware"
 	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -48,6 +49,12 @@ func main() {
 	router.POST("/u", handlers.PostUser)
 	router.POST("/u/login", handlers.PostLogin)
 	router.POST("/u/logout", handlers.PostLogout)
+	router.DELETE(
+		"/u/:uuid", 
+		middleware.Authorization, 
+		middleware.AdminOrLoggedInUserCheck, 
+		handlers.DeleteUser,
+	)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")

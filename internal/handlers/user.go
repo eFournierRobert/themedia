@@ -59,7 +59,7 @@ func PostUser(context *gin.Context) {
 // It will find the user with that UUID in the database with its role.
 func GetUserWithUUID(context *gin.Context) {
 	uuid := context.Param("uuid")
-	if utf8.RuneCountInString(uuid) != 36 {
+	if !validUUIDCheck(&uuid) {
 		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
 			Message: "Please submit a valid UUID",
 		})
@@ -72,7 +72,7 @@ func GetUserWithUUID(context *gin.Context) {
 		return
 	}
 
-	if fullUser == nil {
+	if fullUser == nil || fullUser.RoleUUID == "" {
 		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse{
 			Message: "User not found",
 		})
@@ -134,4 +134,31 @@ func PostLogin(context *gin.Context) {
 func PostLogout(context *gin.Context) {
 	context.SetCookie("Authorization", "", -1, "", "", true, true)
 	context.IndentedJSON(http.StatusOK, "Logout successful")
+}
+
+// DeleteUser is the function that deletes a given user.
+func DeleteUser(context *gin.Context) {
+	uuid := context.Param("uuid")
+	if !validUUIDCheck(&uuid) {
+		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+			Message: "Please submit a valid UUID",
+		})
+		return
+	}
+
+	err := tools.DeleteUser(uuid)
+	if err != nil {
+		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse {
+			Message: "User not found",
+		})
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, "User deleted")
+}
+
+// validUUIDCheck is a function that returns true if 
+// a UUID is valid and false if it isn't.
+func validUUIDCheck(uuid *string) bool {
+	return utf8.RuneCountInString(*uuid) == 36
 }
