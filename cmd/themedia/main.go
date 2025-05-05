@@ -50,9 +50,9 @@ func main() {
 	router.POST("/u/login", handlers.PostLogin)
 	router.POST("/u/logout", handlers.PostLogout)
 	router.DELETE(
-		"/u/:uuid", 
-		middleware.Authorization, 
-		middleware.AdminOrLoggedInUserCheck, 
+		"/u/:uuid",
+		middleware.Authorization,
+		middleware.AdminOrLoggedInUserCheck,
 		handlers.DeleteUser,
 	)
 

@@ -137,9 +137,9 @@ func IsUserAdmin(uuid string) bool {
 	return user.ID != 0 && user.Name == "admin"
 }
 
-// DeleteUser takes the given user UUID and hard delete it 
+// DeleteUser takes the given user UUID and hard delete it
 // from the database.
-func DeleteUser(uuid string) error{
+func DeleteUser(uuid string) error {
 	var user User
 	DB.Where("uuid = ?", uuid).First(&user)
 

@@ -148,7 +148,7 @@ func DeleteUser(context *gin.Context) {
 
 	err := tools.DeleteUser(uuid)
 	if err != nil {
-		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse {
+		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse{
 			Message: "User not found",
 		})
 		return
@@ -157,7 +157,7 @@ func DeleteUser(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, "User deleted")
 }
 
-// validUUIDCheck is a function that returns true if 
+// validUUIDCheck is a function that returns true if
 // a UUID is valid and false if it isn't.
 func validUUIDCheck(uuid *string) bool {
 	return utf8.RuneCountInString(*uuid) == 36
