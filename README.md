@@ -1,3 +1,3 @@
 # The Media
 
-The Media is a small social media API written in Go.
+The Media is a small textboard API written in Go.
