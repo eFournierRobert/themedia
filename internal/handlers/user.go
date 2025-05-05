@@ -157,6 +157,31 @@ func DeleteUser(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, "User deleted")
 }
 
+// PutUser is the function that updates a given user.
+func PutUser(context *gin.Context) {
+	var user models.UserPost
+	context.BindJSON(&user)
+
+	loggedUserUUID, _ := context.Get("userUUID")
+
+	if user.RoleUUID != "" && !tools.IsUserAdmin(loggedUserUUID.(string)) {
+		context.IndentedJSON(http.StatusForbidden, models.ErrorResponse{
+			Message: "Need to be admin to update role.",
+		})
+		return
+	}
+
+	err := tools.UpdateUser(context.Param("uuid"), &user)
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse{
+			Message: "Unknown error",
+		})
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, "User updated")
+}
+
 // validUUIDCheck is a function that returns true if
 // a UUID is valid and false if it isn't.
 func validUUIDCheck(uuid *string) bool {

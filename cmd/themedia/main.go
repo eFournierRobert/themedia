@@ -55,6 +55,12 @@ func main() {
 		middleware.AdminOrLoggedInUserCheck,
 		handlers.DeleteUser,
 	)
+	router.PUT(
+		"/u/:uuid",
+		middleware.Authorization,
+		middleware.AdminOrLoggedInUserCheck,
+		handlers.PutUser,
+	)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")
