@@ -35,6 +35,7 @@ func startupDbMigration() {
 
 	tools.DB.AutoMigrate(&tools.Role{})
 	tools.DB.AutoMigrate(&tools.User{})
+	tools.DB.AutoMigrate(&tools.Ban{})
 }
 
 func main() {
@@ -52,14 +53,23 @@ func main() {
 	router.DELETE(
 		"/u/:uuid",
 		middleware.Authorization,
+		middleware.BanCheck,
 		middleware.AdminOrLoggedInUserCheck,
 		handlers.DeleteUser,
 	)
 	router.PUT(
 		"/u/:uuid",
 		middleware.Authorization,
+		middleware.BanCheck,
 		middleware.AdminOrLoggedInUserCheck,
 		handlers.PutUser,
+	)
+	router.POST(
+		"/u/:uuid/ban",
+		middleware.Authorization,
+		middleware.BanCheck,
+		middleware.AdminCheck,
+		handlers.PostBan,
 	)
 
 	fmt.Println("API started!")

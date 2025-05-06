@@ -101,6 +101,13 @@ func PostLogin(context *gin.Context) {
 		return
 	}
 
+	if tools.IsUserBanned(user.UUID) {
+		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
+			Message: "User temporarily banned",
+		})
+		return
+	}
+
 	isCorrect, err := tools.VerifyPassword(&user.UUID, &user.Password)
 	if err != nil || !isCorrect {
 		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
@@ -180,6 +187,22 @@ func PutUser(context *gin.Context) {
 	}
 
 	context.IndentedJSON(http.StatusOK, "User updated")
+}
+
+// PostBan is the function that handles temp banning of the
+// user in the request.
+func PostBan(context *gin.Context) {
+	var ban models.Ban
+	context.BindJSON(&ban)
+
+	err := tools.CreateBan(context.Param("uuid"), ban.EndDatetime)
+	if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse{
+			Message: err.Error(),
+		})
+	}
+
+	context.IndentedJSON(http.StatusOK, "User temporarily banned")
 }
 
 // validUUIDCheck is a function that returns true if
