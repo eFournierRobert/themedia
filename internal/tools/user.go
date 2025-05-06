@@ -27,6 +27,7 @@ type User struct {
 	PasswordHash []byte
 	RoleID       uint
 	Bio          string
+	Bans         []Ban
 }
 
 // FullUser is the struct responsible to store the return value
