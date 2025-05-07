@@ -23,26 +23,11 @@ func loadEnvVars() {
 	}
 }
 
-// startupDbMigration is the function responsible for doing
-// a migration on the database at startup.
-// If it isn't able to get access to the database, it will
-// panic and print the error.
-func startupDbMigration() {
-	err := tools.GetDb()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	tools.DB.AutoMigrate(&tools.Role{})
-	tools.DB.AutoMigrate(&tools.User{})
-	tools.DB.AutoMigrate(&tools.Ban{})
-}
-
 func main() {
 	fmt.Println("Starting themedia API...")
 
 	loadEnvVars()
-	startupDbMigration()
+	tools.StartupDbMigration()
 
 	router := gin.Default()
 
