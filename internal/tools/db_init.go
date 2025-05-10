@@ -21,13 +21,13 @@ func StartupDbMigration() {
 	DB.AutoMigrate(&User{})
 	DB.AutoMigrate(&Ban{})
 
-	checkIfFirstStartup(DB)
+	CheckIfFirstStartup(DB)
 }
 
 // checkIfFirstStartup is the function that checks if the database
 // has the required roles and user for deleted content. If not,
 // it creates them.
-func checkIfFirstStartup(DB *gorm.DB) {
+func CheckIfFirstStartup(DB *gorm.DB) {
 	var count int64
 	DB.Model(&Role{}).Count(&count)
 
