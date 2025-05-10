@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
 var TempDir string
 
 func SetupDatabase(t testing.T) func(t testing.T) {
@@ -44,7 +43,7 @@ func SetupDatabase(t testing.T) func(t testing.T) {
 	}
 	db.Create(users)
 
-	DB = db
+	tools.DB = db
 
 	// Delete the directory after test
 	return func(t testing.T) {
