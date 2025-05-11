@@ -160,6 +160,10 @@ func UpdateUser(uuid string, user *models.UserPost) error {
 	var updatedUser User
 	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
 
+	if oldUser.ID == 0 {
+		return errors.New("User does not exist")
+	}
+
 	updatedUser.ID = oldUser.ID
 
 	if user.Username != "" {
@@ -167,7 +171,7 @@ func UpdateUser(uuid string, user *models.UserPost) error {
 	}
 
 	if user.Password != "" {
-		newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(*&user.Password), bcrypt.DefaultCost)
+		newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		if err != nil {
 			return errors.New("Couldn't hash password")
 		}

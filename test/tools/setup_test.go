@@ -8,6 +8,7 @@ import (
 	"github.com/eFournierRobert/themedia/internal/tools"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var TempDir string
@@ -23,7 +24,9 @@ func SetupDatabase(t testing.T) func(t testing.T) {
 	TempDir = tempDir
 
 	//Creating SQLite database
-	db, err := gorm.Open(sqlite.Open(tempDir+"/testing.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(tempDir+"/testing.db"), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		fmt.Println("Couldn't create test SQLite database.")
 		os.Exit(1)
@@ -37,9 +40,9 @@ func SetupDatabase(t testing.T) func(t testing.T) {
 	tools.CheckIfFirstStartup(db)
 
 	users := []*tools.User{
-		{UUID: "de0c8142-5973-478b-9287-37ff25e4e332", Username: "John Doe", PasswordHash: []byte("test"), RoleID: 1, Bio: ""},
-		{UUID: "35ad671e-0fa0-4829-ae8e-37043d95fc33", Username: "Bright Horizon", PasswordHash: []byte("test"), RoleID: 2, Bio: ""},
-		{UUID: "dd1614ee-e26f-4949-ba0f-fd8d7df031d2", Username: "Tux Gnu", PasswordHash: []byte("test"), RoleID: 2, Bio: ""},
+		{UUID: "de0c8142-5973-478b-9287-37ff25e4e332", Username: "John Doe", PasswordHash: []byte("test"), RoleID: 1, Bio: "Bio of John Doe"},
+		{UUID: "35ad671e-0fa0-4829-ae8e-37043d95fc33", Username: "Bright Horizon", PasswordHash: []byte("test"), RoleID: 2, Bio: "Bio of Bright Horizon"},
+		{UUID: "dd1614ee-e26f-4949-ba0f-fd8d7df031d2", Username: "Tux Gnu", PasswordHash: []byte("test"), RoleID: 2, Bio: "Bio of Tux Gnu"},
 	}
 	db.Create(users)
 
