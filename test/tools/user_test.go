@@ -27,6 +27,18 @@ func TestCreateValidUser(t *testing.T) {
 	}
 }
 
+func TestCreateUserWithUsernameDeleted(t *testing.T) {
+	teardownSuite := SetupDatabase(*t)
+	defer teardownSuite(*t)
+
+	username := "deleted"
+	password := "password"
+	_, err := tools.CreateUser(&username, &password, getAdminRole())
+	if err == nil {
+		t.Errorf("Could create new user with reserved username deleted")
+	}
+}
+
 func TestCreateUserWithEmptyRole(t *testing.T) {
 	teardownSuite := SetupDatabase(*t)
 	defer teardownSuite(*t)
@@ -358,12 +370,25 @@ func TestUpdateValidUSerWithInvalidRole(t *testing.T) {
 		RoleUUID: "Poire",
 	}
 
-	var oldUser tools.User
-	tools.DB.Where("uuid = ?", uuid).First(&oldUser)
-
 	err := tools.UpdateUser(uuid, &user)
 	if err == nil {
 		t.Errorf("User was updated with invalid role of UUID %s", user.RoleUUID)
+	}
+}
+
+func TestUpdateUserWithUsernameDeleted(t *testing.T) {
+	teardownSuite := SetupDatabase(*t)
+	defer teardownSuite(*t)
+
+	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	user := models.UserPost{
+		UUID:     uuid,
+		Username: "deleted",
+	}
+
+	err := tools.UpdateUser(uuid, &user)
+	if err == nil {
+		t.Errorf("User was updated with reserved username deleted")
 	}
 }
 

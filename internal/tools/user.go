@@ -46,21 +46,23 @@ type FullUser struct {
 // the password passed must be in plain text since function will be hashing.
 // It returns a pointer to a User struct or an error.
 func CreateUser(username *string, password *string, role *Role) (*User, error) {
+	if *username == "deleted" {
+		return nil, errors.New("cannot create a user with the username deleted")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.New("Couldn't hash password")
+		return nil, errors.New("couldn't hash password")
 	}
 
 	if role.ID == 0 {
 		DB.Where("name = ?", "user").First(&role)
 		if role.ID == 0 {
-			return nil, errors.New("Couldn't find the user role")
+			return nil, errors.New("couldn't find the user role")
 		}
 	}
 
-	var user User
-
-	user = User{
+	user := User{
 		UUID:         uuid.NewString(),
 		Username:     *username,
 		PasswordHash: hashedPassword,
@@ -107,7 +109,7 @@ func VerifyPassword(uuid *string, password *string) (bool, error) {
 	DB.Table("users").Select("id", "password_hash").Where("uuid = ?", uuid).First(&user)
 
 	if user.ID == 0 {
-		return false, errors.New("Did not find user")
+		return false, errors.New("did not find user")
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(*password))
@@ -143,7 +145,7 @@ func IsUserAdmin(uuid string) bool {
 // from the database.
 func DeleteUser(uuid string) error {
 	var user User
-	DB.Where("uuid = ?", uuid).First(&user)
+	DB.Where("uuid = ? AND username != 'deleted'", uuid).First(&user)
 
 	if user.ID == 0 {
 		return errors.New("User does not exist")
@@ -156,6 +158,10 @@ func DeleteUser(uuid string) error {
 // UpdateUser updates the user in the database with the new information received.
 // Returns nil if successful or an error if not.
 func UpdateUser(uuid string, user *models.UserPost) error {
+	if user.Username == "deleted" {
+		return errors.New("cannot modify username for deleted")
+	}
+
 	var oldUser User
 	var updatedUser User
 	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
@@ -173,7 +179,7 @@ func UpdateUser(uuid string, user *models.UserPost) error {
 	if user.Password != "" {
 		newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		if err != nil {
-			return errors.New("Couldn't hash password")
+			return errors.New("couldn't hash password")
 		}
 
 		updatedUser.PasswordHash = newPasswordHash
