@@ -320,6 +320,53 @@ func TestUpdateValidUserWithOnlyBio(t *testing.T) {
 	}
 }
 
+func TestUpdateValidUserWithValidRole(t *testing.T) {
+	teardownSuite := SetupDatabase(*t)
+	defer teardownSuite(*t)
+
+	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	user := models.UserPost{
+		UUID:     uuid,
+		RoleUUID: getAdminRole().UUID,
+	}
+
+	var oldUser tools.User
+	tools.DB.Where("uuid = ?", uuid).First(&oldUser)
+
+	err := tools.UpdateUser(uuid, &user)
+	if err != nil {
+		t.Errorf("Error during user update. Got %s", err.Error())
+	}
+
+	var updatedUser tools.User
+	tools.DB.Where("uuid = ?", uuid).First(&updatedUser)
+
+	if updatedUser.ID == 0 {
+		t.Errorf("Updated user was not found using valid UUID %s", uuid)
+	} else if updatedUser.RoleID == oldUser.RoleID {
+		t.Errorf("Role was not updated. Expected %d, got %d", getAdminRole().ID, updatedUser.RoleID)
+	}
+}
+
+func TestUpdateValidUSerWithInvalidRole(t *testing.T) {
+	teardownSuite := SetupDatabase(*t)
+	defer teardownSuite(*t)
+
+	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	user := models.UserPost{
+		UUID:     uuid,
+		RoleUUID: "Poire",
+	}
+
+	var oldUser tools.User
+	tools.DB.Where("uuid = ?", uuid).First(&oldUser)
+
+	err := tools.UpdateUser(uuid, &user)
+	if err == nil {
+		t.Errorf("User was updated with invalid role of UUID %s", user.RoleUUID)
+	}
+}
+
 func getAdminRole() *tools.Role {
 	var role tools.Role
 	tools.DB.Where("id = ?", 1).First(&role)
