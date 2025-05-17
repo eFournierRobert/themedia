@@ -30,7 +30,7 @@ func main() {
 
 	router := gin.Default()
 
-	user_handlers.AddEndpointToRouter(router)
+	user_handlers.AddEndpointsToRouter(router)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")

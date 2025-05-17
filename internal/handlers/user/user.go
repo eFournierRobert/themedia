@@ -18,7 +18,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AddEndpointToRouter(router *gin.Engine) {
+func AddEndpointsToRouter(router *gin.Engine) {
 	router.GET("/u/:uuid", GetUserWithUUID)
 	router.POST("/u", PostUser)
 	router.POST("/u/login", PostLogin)
