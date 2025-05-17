@@ -8,12 +8,11 @@ import (
 	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
 	"github.com/eFournierRobert/themedia/internal/tools"
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
-	"github.com/eFournierRobert/themedia/internal/tools/testing_init"
 )
 
 func TestCreateValidUser(t *testing.T) {
-	teardownSuite := testing_init.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	username := "username"
 	password := "password"
@@ -31,8 +30,8 @@ func TestCreateValidUser(t *testing.T) {
 }
 
 func TestCreateUserWithUsernameDeleted(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	username := "deleted"
 	password := "password"
@@ -43,8 +42,8 @@ func TestCreateUserWithUsernameDeleted(t *testing.T) {
 }
 
 func TestCreateUserWithEmptyRole(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	username := "username"
 	password := "password"
@@ -62,8 +61,8 @@ func TestCreateUserWithEmptyRole(t *testing.T) {
 }
 
 func TestFindFullValidUserByUUID(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "de0c8142-5973-478b-9287-37ff25e4e332"
 	usr, err := FindFullUserByUUID(&uuid)
@@ -79,8 +78,8 @@ func TestFindFullValidUserByUUID(t *testing.T) {
 }
 
 func TestFindFullUserThatDoesNotExist(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "banane"
 	usr, err := FindFullUserByUUID(&uuid)
@@ -94,8 +93,8 @@ func TestFindFullUserThatDoesNotExist(t *testing.T) {
 }
 
 func TestFindRoleByUUID(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := getAdminRole().UUID
 	role, err := FindRoleByUUID(&uuid)
@@ -109,8 +108,8 @@ func TestFindRoleByUUID(t *testing.T) {
 }
 
 func TestFindInvalidRoleWithUUID(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "pomme"
 	role, err := FindRoleByUUID(&uuid)
@@ -124,8 +123,8 @@ func TestFindInvalidRoleWithUUID(t *testing.T) {
 }
 
 func TestVerifyValidPasswordForValidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	// Create new user so we have a password hash
 	username := "username"
@@ -146,8 +145,8 @@ func TestVerifyValidPasswordForValidUser(t *testing.T) {
 }
 
 func TestVerifyInvalidPasswordForValidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	// Create new user so we have a password hash
 	username := "username"
@@ -169,8 +168,8 @@ func TestVerifyInvalidPasswordForValidUser(t *testing.T) {
 }
 
 func TestVerifyPasswordForInvalidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	invalidUUID := "Chocolatine"
 	dummyPassword := "Poutine"
@@ -181,8 +180,8 @@ func TestVerifyPasswordForInvalidUser(t *testing.T) {
 }
 
 func TestDoesValidUserExist(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "de0c8142-5973-478b-9287-37ff25e4e332"
 
@@ -193,8 +192,8 @@ func TestDoesValidUserExist(t *testing.T) {
 }
 
 func TestDoesInvalidUserExist(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "Poire"
 
@@ -205,8 +204,8 @@ func TestDoesInvalidUserExist(t *testing.T) {
 }
 
 func TestIsValidUserAdmin(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "de0c8142-5973-478b-9287-37ff25e4e332"
 
@@ -217,8 +216,8 @@ func TestIsValidUserAdmin(t *testing.T) {
 }
 
 func TestIsInvalidUserAdmin(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 
@@ -229,8 +228,8 @@ func TestIsInvalidUserAdmin(t *testing.T) {
 }
 
 func TestDeleteValidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	err := DeleteUser(uuid)
@@ -244,8 +243,8 @@ func TestDeleteValidUser(t *testing.T) {
 }
 
 func TestDeleteInvalidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "Pouding chomeur"
 	err := DeleteUser(uuid)
@@ -255,8 +254,8 @@ func TestDeleteInvalidUser(t *testing.T) {
 }
 
 func TestUpdateValidUserWithOnlyUsername(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
@@ -280,8 +279,8 @@ func TestUpdateValidUserWithOnlyUsername(t *testing.T) {
 }
 
 func TestUpdateValidUserWithOnlyPassword(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
@@ -308,8 +307,8 @@ func TestUpdateValidUserWithOnlyPassword(t *testing.T) {
 }
 
 func TestUpdateValidUserWithOnlyBio(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
@@ -336,8 +335,8 @@ func TestUpdateValidUserWithOnlyBio(t *testing.T) {
 }
 
 func TestUpdateValidUserWithValidRole(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
@@ -364,8 +363,8 @@ func TestUpdateValidUserWithValidRole(t *testing.T) {
 }
 
 func TestUpdateValidUSerWithInvalidRole(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
@@ -380,8 +379,8 @@ func TestUpdateValidUSerWithInvalidRole(t *testing.T) {
 }
 
 func TestUpdateUserWithUsernameDeleted(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{

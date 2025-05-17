@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func SetupDatabase(t testing.T) func(t testing.T) {
+func SetupDatabase(t *testing.T) func(t *testing.T) {
 	// Creating temp directory in /tmp
 	tempDir, err := os.MkdirTemp("", "themedia-testing-*")
 	if err != nil {
@@ -46,7 +46,7 @@ func SetupDatabase(t testing.T) func(t testing.T) {
 	tools.DB = db
 
 	// Delete the directory after test
-	return func(t testing.T) {
+	return func(t *testing.T) {
 		os.RemoveAll(tempDir)
 	}
 }

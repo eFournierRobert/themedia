@@ -10,8 +10,8 @@ import (
 )
 
 func TestCreateBanWithValidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	err := CreateBan("35ad671e-0fa0-4829-ae8e-37043d95fc33", time.Now())
 	if err != nil {
@@ -20,8 +20,8 @@ func TestCreateBanWithValidUser(t *testing.T) {
 }
 
 func TestCreateBanWithInvalidUser(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	err := CreateBan("Fraise", time.Now())
 	if err == nil {
@@ -30,8 +30,8 @@ func TestCreateBanWithInvalidUser(t *testing.T) {
 }
 
 func TestIsUserBanned(t *testing.T) {
-	teardownSuite := init_tools.SetupDatabase(*t)
-	defer teardownSuite(*t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
 
 	b := IsUserBanned(*getDeletedUserUUID())
 
