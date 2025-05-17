@@ -1,6 +1,8 @@
 package user_handlers
 
 import (
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
@@ -14,4 +16,8 @@ func TestPostUser(t *testing.T) {
 	router := gin.Default()
 	AddEndpointsToRouter(router)
 
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, httptest.NewRequest("POST", "/u", strings.NewReader(`{
+		
+	}`)))
 }

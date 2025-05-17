@@ -64,9 +64,9 @@ func FindFullUserByUUID(uuid *string) (*dbmodels.FullUser, error) {
 // FindRoleByUUID is the function responsible for finding
 // the role that has the given UUID in the database.
 // It will return a pointer to a Role struct or an error.
-func FindRoleByUUID(uuid *string) (*dbmodels.Role, error) {
+func FindRoleByName(name *string) (*dbmodels.Role, error) {
 	var role dbmodels.Role
-	tools.DB.Where("uuid = ?", *uuid).First(&role)
+	tools.DB.Where("name = ?", *name).First(&role)
 
 	return &role, nil
 }
@@ -118,7 +118,7 @@ func DeleteUser(uuid string) error {
 	tools.DB.Where("uuid = ? AND username != 'deleted'", uuid).First(&user)
 
 	if user.ID == 0 {
-		return errors.New("User does not exist")
+		return errors.New("user does not exist")
 	}
 
 	tools.DB.Unscoped().Delete(&user)
@@ -137,7 +137,7 @@ func UpdateUser(uuid string, user *jsonmodels.UserPost) error {
 	tools.DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
 
 	if oldUser.ID == 0 {
-		return errors.New("User does not exist")
+		return errors.New("user does not exist")
 	}
 
 	updatedUser.ID = oldUser.ID
@@ -159,11 +159,11 @@ func UpdateUser(uuid string, user *jsonmodels.UserPost) error {
 		updatedUser.Bio = user.Bio
 	}
 
-	if user.RoleUUID != "" {
+	if user.Role != "" {
 		var role dbmodels.Role
-		tools.DB.Table("roles").Select("roles.id").Where("roles.uuid = ?", user.RoleUUID).First(&role)
+		tools.DB.Table("roles").Select("roles.id").Where("roles.name = ?", user.Role).First(&role)
 		if role.ID == 0 {
-			return errors.New("Role does not exist")
+			return errors.New("role does not exist")
 		}
 
 		updatedUser.RoleID = role.ID

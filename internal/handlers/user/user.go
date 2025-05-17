@@ -64,7 +64,7 @@ func PostUser(context *gin.Context) {
 		return
 	}
 
-	role, err := user_tools.FindRoleByUUID(&user.RoleUUID)
+	role, err := user_tools.FindRoleByName(&user.Role)
 	if err != nil {
 		handlers.UnknownError(context)
 		return
@@ -202,7 +202,7 @@ func PutUser(context *gin.Context) {
 
 	loggedUserUUID, _ := context.Get("userUUID")
 
-	if user.RoleUUID != "" && !user_tools.IsUserAdmin(loggedUserUUID.(string)) {
+	if user.Role != "" && !user_tools.IsUserAdmin(loggedUserUUID.(string)) {
 		context.IndentedJSON(http.StatusForbidden, jsonmodels.ErrorResponse{
 			Message: "Need to be admin to update role.",
 		})

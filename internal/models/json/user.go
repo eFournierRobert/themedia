@@ -9,7 +9,7 @@ type UserPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Bio      string `json:"bio"`
-	RoleUUID string `json:"roleUuid"`
+	Role     string `json:"role"`
 }
 
 // UserResponse is the struct used to serialize

@@ -92,33 +92,33 @@ func TestFindFullUserThatDoesNotExist(t *testing.T) {
 	}
 }
 
-func TestFindRoleByUUID(t *testing.T) {
+func TestFindRoleByName(t *testing.T) {
 	teardownSuite := init_tools.SetupDatabase(t)
 	defer teardownSuite(t)
 
-	uuid := getAdminRole().UUID
-	role, err := FindRoleByUUID(&uuid)
+	adminName := "admin"
+	role, err := FindRoleByName(&adminName)
 	if err != nil {
 		t.Errorf("Unknown error while finding full user. Got error %s", err.Error())
 	}
 
 	if role.ID == 0 {
-		t.Errorf("Did not find admin role with UUID %s", uuid)
+		t.Errorf("Did not find admin role with name %s", adminName)
 	}
 }
 
-func TestFindInvalidRoleWithUUID(t *testing.T) {
+func TestFindInvalidRoleWithName(t *testing.T) {
 	teardownSuite := init_tools.SetupDatabase(t)
 	defer teardownSuite(t)
 
 	uuid := "pomme"
-	role, err := FindRoleByUUID(&uuid)
+	role, err := FindRoleByName(&uuid)
 	if err != nil {
 		t.Errorf("Unknown error while finding full user. Got error %s", err.Error())
 	}
 
 	if role.ID != 0 {
-		t.Errorf("Got invalid role while searching by UUID. Searched UUID %s, got %+v", uuid, role)
+		t.Errorf("Got invalid role while searching by name. Searched name %s, got %+v", uuid, role)
 	}
 }
 
@@ -340,8 +340,8 @@ func TestUpdateValidUserWithValidRole(t *testing.T) {
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
-		UUID:     uuid,
-		RoleUUID: getAdminRole().UUID,
+		UUID: uuid,
+		Role: "admin",
 	}
 
 	var oldUser dbmodels.User
@@ -368,13 +368,13 @@ func TestUpdateValidUSerWithInvalidRole(t *testing.T) {
 
 	uuid := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	user := jsonmodels.UserPost{
-		UUID:     uuid,
-		RoleUUID: "Poire",
+		UUID: uuid,
+		Role: "Poire",
 	}
 
 	err := UpdateUser(uuid, &user)
 	if err == nil {
-		t.Errorf("User was updated with invalid role of UUID %s", user.RoleUUID)
+		t.Errorf("User was updated with invalid role of name %s", user.Role)
 	}
 }
 
