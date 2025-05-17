@@ -28,7 +28,8 @@ func main() {
 	loadEnvVars()
 	init_tools.StartupDbMigration()
 
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
 	user_handlers.AddEndpointsToRouter(router)
 

@@ -18,6 +18,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// AddEndpointsToRouter is the function that adds
+// all the endpoints of this handler to the given router.
 func AddEndpointsToRouter(router *gin.Engine) {
 	router.GET("/u/:uuid", GetUserWithUUID)
 	router.POST("/u", PostUser)
@@ -103,7 +105,7 @@ func GetUserWithUUID(context *gin.Context) {
 		return
 	}
 
-	if fullUser == nil || fullUser.RoleUUID == "" {
+	if fullUser.ID == 0 {
 		context.IndentedJSON(http.StatusNotFound, jsonmodels.ErrorResponse{
 			Message: "User not found",
 		})
