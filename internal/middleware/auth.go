@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/eFournierRobert/themedia/internal/tools"
+	user_tools "github.com/eFournierRobert/themedia/internal/tools/user"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -38,7 +38,7 @@ func Authorization(context *gin.Context) {
 			return
 		}
 
-		if !tools.DoesUserExist(claims["sub"].(string)) {
+		if !user_tools.DoesUserExist(claims["sub"].(string)) {
 			context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

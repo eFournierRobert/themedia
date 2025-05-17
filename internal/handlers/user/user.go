@@ -1,7 +1,7 @@
 // Package handlers is the package that handles the API calls.
 // All functions in the package returns the HTTP code and the
 // JSON response.
-package handlers
+package user_handlers
 
 import (
 	"net/http"
@@ -9,8 +9,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/eFournierRobert/themedia/internal/models"
-	"github.com/eFournierRobert/themedia/internal/tools"
+	"github.com/eFournierRobert/themedia/internal/handlers"
+	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
+	ban_tools "github.com/eFournierRobert/themedia/internal/tools/ban"
+	user_tools "github.com/eFournierRobert/themedia/internal/tools/user"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -18,37 +20,37 @@ import (
 // PostUser is the function that handles the API POST /u.
 // It will create a new user in the database.
 func PostUser(context *gin.Context) {
-	var user models.UserPost
+	var user jsonmodels.UserPost
 	if err := context.BindJSON(&user); err != nil {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+		context.IndentedJSON(http.StatusBadRequest, jsonmodels.ErrorResponse{
 			Message: "Couldn't create user",
 		})
 		return
 	}
 
 	if user.Username == "" || user.Password == "" {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+		context.IndentedJSON(http.StatusBadRequest, jsonmodels.ErrorResponse{
 			Message: "Populate username and password for creation",
 		})
 		return
 	}
 
-	role, err := tools.FindRoleByUUID(&user.RoleUUID)
+	role, err := user_tools.FindRoleByUUID(&user.RoleUUID)
 	if err != nil {
-		UnknownError(context)
+		handlers.UnknownError(context)
 		return
 	}
 
-	createdUser, err := tools.CreateUser(&user.Username, &user.Password, role)
+	createdUser, err := user_tools.CreateUser(&user.Username, &user.Password, role)
 	if err != nil {
-		UnknownError(context)
+		handlers.UnknownError(context)
 		return
 	}
 
-	context.IndentedJSON(http.StatusCreated, models.UserResponse{
+	context.IndentedJSON(http.StatusCreated, jsonmodels.UserResponse{
 		UUID:     createdUser.UUID,
 		Username: createdUser.Username,
-		Role: models.RoleResponse{
+		Role: jsonmodels.RoleResponse{
 			UUID: role.UUID,
 			Name: role.Name,
 		},
@@ -60,29 +62,29 @@ func PostUser(context *gin.Context) {
 func GetUserWithUUID(context *gin.Context) {
 	uuid := context.Param("uuid")
 	if !validUUIDCheck(&uuid) {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+		context.IndentedJSON(http.StatusBadRequest, jsonmodels.ErrorResponse{
 			Message: "Please submit a valid UUID",
 		})
 		return
 	}
 
-	fullUser, err := tools.FindFullUserByUUID(&uuid)
+	fullUser, err := user_tools.FindFullUserByUUID(&uuid)
 	if err != nil {
-		UnknownError(context)
+		handlers.UnknownError(context)
 		return
 	}
 
 	if fullUser == nil || fullUser.RoleUUID == "" {
-		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse{
+		context.IndentedJSON(http.StatusNotFound, jsonmodels.ErrorResponse{
 			Message: "User not found",
 		})
 		return
 	}
 
-	context.IndentedJSON(http.StatusFound, models.UserResponse{
+	context.IndentedJSON(http.StatusFound, jsonmodels.UserResponse{
 		UUID:     fullUser.UserUUID,
 		Username: fullUser.Username,
-		Role: models.RoleResponse{
+		Role: jsonmodels.RoleResponse{
 			UUID: fullUser.RoleUUID,
 			Name: fullUser.Name,
 		},
@@ -93,24 +95,24 @@ func GetUserWithUUID(context *gin.Context) {
 // It will check the credentials and create a cookie with the
 // JWT token inside.
 func PostLogin(context *gin.Context) {
-	var user models.UserPost
+	var user jsonmodels.UserPost
 	if err := context.BindJSON(&user); err != nil {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+		context.IndentedJSON(http.StatusBadRequest, jsonmodels.ErrorResponse{
 			Message: "Couldn't read credentials",
 		})
 		return
 	}
 
-	if tools.IsUserBanned(user.UUID) {
-		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
+	if ban_tools.IsUserBanned(user.UUID) {
+		context.IndentedJSON(http.StatusUnauthorized, jsonmodels.ErrorResponse{
 			Message: "User temporarily banned",
 		})
 		return
 	}
 
-	isCorrect, err := tools.VerifyPassword(&user.UUID, &user.Password)
+	isCorrect, err := user_tools.VerifyPassword(&user.UUID, &user.Password)
 	if err != nil || !isCorrect {
-		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
+		context.IndentedJSON(http.StatusUnauthorized, jsonmodels.ErrorResponse{
 			Message: "Login failed",
 		})
 		return
@@ -123,7 +125,7 @@ func PostLogin(context *gin.Context) {
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		context.IndentedJSON(http.StatusUnauthorized, models.ErrorResponse{
+		context.IndentedJSON(http.StatusUnauthorized, jsonmodels.ErrorResponse{
 			Message: "Login failed",
 		})
 		return
@@ -147,15 +149,15 @@ func PostLogout(context *gin.Context) {
 func DeleteUser(context *gin.Context) {
 	uuid := context.Param("uuid")
 	if !validUUIDCheck(&uuid) {
-		context.IndentedJSON(http.StatusBadRequest, models.ErrorResponse{
+		context.IndentedJSON(http.StatusBadRequest, jsonmodels.ErrorResponse{
 			Message: "Please submit a valid UUID",
 		})
 		return
 	}
 
-	err := tools.DeleteUser(uuid)
+	err := user_tools.DeleteUser(uuid)
 	if err != nil {
-		context.IndentedJSON(http.StatusNotFound, models.ErrorResponse{
+		context.IndentedJSON(http.StatusNotFound, jsonmodels.ErrorResponse{
 			Message: "User not found",
 		})
 		return
@@ -166,21 +168,21 @@ func DeleteUser(context *gin.Context) {
 
 // PutUser is the function that updates a given user.
 func PutUser(context *gin.Context) {
-	var user models.UserPost
+	var user jsonmodels.UserPost
 	context.BindJSON(&user)
 
 	loggedUserUUID, _ := context.Get("userUUID")
 
-	if user.RoleUUID != "" && !tools.IsUserAdmin(loggedUserUUID.(string)) {
-		context.IndentedJSON(http.StatusForbidden, models.ErrorResponse{
+	if user.RoleUUID != "" && !user_tools.IsUserAdmin(loggedUserUUID.(string)) {
+		context.IndentedJSON(http.StatusForbidden, jsonmodels.ErrorResponse{
 			Message: "Need to be admin to update role.",
 		})
 		return
 	}
 
-	err := tools.UpdateUser(context.Param("uuid"), &user)
+	err := user_tools.UpdateUser(context.Param("uuid"), &user)
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse{
+		context.IndentedJSON(http.StatusInternalServerError, jsonmodels.ErrorResponse{
 			Message: "Unknown error",
 		})
 		return
@@ -192,12 +194,12 @@ func PutUser(context *gin.Context) {
 // PostBan is the function that handles temp banning of the
 // user in the request.
 func PostBan(context *gin.Context) {
-	var ban models.Ban
+	var ban jsonmodels.Ban
 	context.BindJSON(&ban)
 
-	err := tools.CreateBan(context.Param("uuid"), ban.EndDatetime)
+	err := ban_tools.CreateBan(context.Param("uuid"), ban.EndDatetime)
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse{
+		context.IndentedJSON(http.StatusInternalServerError, jsonmodels.ErrorResponse{
 			Message: err.Error(),
 		})
 	}

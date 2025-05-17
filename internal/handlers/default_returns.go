@@ -6,15 +6,14 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/eFournierRobert/themedia/internal/models"
+	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
 	"github.com/gin-gonic/gin"
 )
 
 // UnknownError is the function responsible to return an internal server error
 // with the error message "Unknown error".
 func UnknownError(context *gin.Context) {
-	context.IndentedJSON(http.StatusInternalServerError, models.ErrorResponse{
+	context.IndentedJSON(http.StatusInternalServerError, jsonmodels.ErrorResponse{
 		Message: "Unknown error",
 	})
-	return
 }

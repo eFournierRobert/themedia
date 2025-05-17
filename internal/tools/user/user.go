@@ -1,51 +1,21 @@
 // Package tools is the package containing
 // all the request made to the database.
-package tools
+package user_tools
 
 import (
 	"errors"
 
-	"github.com/eFournierRobert/themedia/internal/models"
+	dbmodels "github.com/eFournierRobert/themedia/internal/models/db"
+	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
+	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-// Role is the struct responsible for the table roles in the database.
-type Role struct {
-	gorm.Model
-	UUID  string `gorm:"type:char(36);uniqueIndex"`
-	Name  string
-	Users []User
-}
-
-// User is the struct responsible for the table users in the database.
-type User struct {
-	gorm.Model
-	UUID         string `gorm:"type:char(36);uniqueIndex"`
-	Username     string
-	PasswordHash []byte
-	RoleID       uint
-	Bio          string
-	Bans         []Ban
-}
-
-// FullUser is the struct responsible to store the return value
-// of a SELECT in the database that has the user information
-// and the role information of that users.
-type FullUser struct {
-	ID       uint
-	UserUUID string
-	Username string
-	Bio      string
-	RoleUUID string
-	Name     string
-}
 
 // CreateUser is the function responsible for inserting a new user in the database.
 // the password passed must be in plain text since function will be hashing.
 // It returns a pointer to a User struct or an error.
-func CreateUser(username *string, password *string, role *Role) (*User, error) {
+func CreateUser(username *string, password *string, role *dbmodels.Role) (*dbmodels.User, error) {
 	if *username == "deleted" {
 		return nil, errors.New("cannot create a user with the username deleted")
 	}
@@ -56,20 +26,20 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 	}
 
 	if role.ID == 0 {
-		DB.Where("name = ?", "user").First(&role)
+		tools.DB.Where("name = ?", "user").First(&role)
 		if role.ID == 0 {
 			return nil, errors.New("couldn't find the user role")
 		}
 	}
 
-	user := User{
+	user := dbmodels.User{
 		UUID:         uuid.NewString(),
 		Username:     *username,
 		PasswordHash: hashedPassword,
 		RoleID:       role.ID,
 	}
 
-	DB.Create(&user)
+	tools.DB.Create(&user)
 
 	return &user, nil
 }
@@ -77,9 +47,9 @@ func CreateUser(username *string, password *string, role *Role) (*User, error) {
 // FindFullUserByUUID is the function responsible for finding the user that
 // has the given UUID in the database.
 // It will return a pointer to a FullUser struct or an error.
-func FindFullUserByUUID(uuid *string) (*FullUser, error) {
-	var fullUser FullUser
-	DB.Table("users").Select(
+func FindFullUserByUUID(uuid *string) (*dbmodels.FullUser, error) {
+	var fullUser dbmodels.FullUser
+	tools.DB.Table("users").Select(
 		"users.id",
 		"users.uuid AS user_uuid",
 		"users.username",
@@ -94,9 +64,9 @@ func FindFullUserByUUID(uuid *string) (*FullUser, error) {
 // FindRoleByUUID is the function responsible for finding
 // the role that has the given UUID in the database.
 // It will return a pointer to a Role struct or an error.
-func FindRoleByUUID(uuid *string) (*Role, error) {
-	var role Role
-	DB.Where("uuid = ?", *uuid).First(&role)
+func FindRoleByUUID(uuid *string) (*dbmodels.Role, error) {
+	var role dbmodels.Role
+	tools.DB.Where("uuid = ?", *uuid).First(&role)
 
 	return &role, nil
 }
@@ -105,8 +75,8 @@ func FindRoleByUUID(uuid *string) (*Role, error) {
 // compares it to the hashed one in the database for the user with the given
 // UUID. It will return a boolean or an error.
 func VerifyPassword(uuid *string, password *string) (bool, error) {
-	var user User
-	DB.Table("users").Select("id", "password_hash").Where("uuid = ?", uuid).First(&user)
+	var user dbmodels.User
+	tools.DB.Table("users").Select("id", "password_hash").Where("uuid = ?", uuid).First(&user)
 
 	if user.ID == 0 {
 		return false, errors.New("did not find user")
@@ -123,8 +93,8 @@ func VerifyPassword(uuid *string, password *string) (bool, error) {
 // DoesUserExist is the function that checks if a user with the given
 // UUID exist in the database. It returns a boolean.
 func DoesUserExist(uuid string) bool {
-	var user User
-	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&user)
+	var user dbmodels.User
+	tools.DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&user)
 
 	return user.ID != 0
 }
@@ -132,8 +102,8 @@ func DoesUserExist(uuid string) bool {
 // IsUserAdmin takes the given user UUID and checks if the user
 // is an admin or not.
 func IsUserAdmin(uuid string) bool {
-	var user FullUser
-	DB.Table("users").Select(
+	var user dbmodels.FullUser
+	tools.DB.Table("users").Select(
 		"users.id",
 		"roles.name",
 	).Where("users.uuid = ?", uuid).Joins("JOIN roles on roles.id = users.role_id").First(&user)
@@ -144,27 +114,27 @@ func IsUserAdmin(uuid string) bool {
 // DeleteUser takes the given user UUID and hard delete it
 // from the database.
 func DeleteUser(uuid string) error {
-	var user User
-	DB.Where("uuid = ? AND username != 'deleted'", uuid).First(&user)
+	var user dbmodels.User
+	tools.DB.Where("uuid = ? AND username != 'deleted'", uuid).First(&user)
 
 	if user.ID == 0 {
 		return errors.New("User does not exist")
 	}
 
-	DB.Unscoped().Delete(&user)
+	tools.DB.Unscoped().Delete(&user)
 	return nil
 }
 
 // UpdateUser updates the user in the database with the new information received.
 // Returns nil if successful or an error if not.
-func UpdateUser(uuid string, user *models.UserPost) error {
+func UpdateUser(uuid string, user *jsonmodels.UserPost) error {
 	if user.Username == "deleted" {
 		return errors.New("cannot modify username for deleted")
 	}
 
-	var oldUser User
-	var updatedUser User
-	DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
+	var oldUser dbmodels.User
+	var updatedUser dbmodels.User
+	tools.DB.Table("users").Select("id").Where("uuid = ?", uuid).First(&oldUser)
 
 	if oldUser.ID == 0 {
 		return errors.New("User does not exist")
@@ -190,8 +160,8 @@ func UpdateUser(uuid string, user *models.UserPost) error {
 	}
 
 	if user.RoleUUID != "" {
-		var role Role
-		DB.Table("roles").Select("roles.id").Where("roles.uuid = ?", user.RoleUUID).First(&role)
+		var role dbmodels.Role
+		tools.DB.Table("roles").Select("roles.id").Where("roles.uuid = ?", user.RoleUUID).First(&role)
 		if role.ID == 0 {
 			return errors.New("Role does not exist")
 		}
@@ -199,6 +169,6 @@ func UpdateUser(uuid string, user *models.UserPost) error {
 		updatedUser.RoleID = role.ID
 	}
 
-	DB.Model(&updatedUser).Updates(updatedUser)
+	tools.DB.Model(&updatedUser).Updates(updatedUser)
 	return nil
 }

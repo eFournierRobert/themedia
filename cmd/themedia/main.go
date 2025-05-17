@@ -5,9 +5,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/eFournierRobert/themedia/internal/handlers"
+	handlers "github.com/eFournierRobert/themedia/internal/handlers/user"
 	"github.com/eFournierRobert/themedia/internal/middleware"
-	"github.com/eFournierRobert/themedia/internal/tools"
+	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Starting themedia API...")
 
 	loadEnvVars()
-	tools.StartupDbMigration()
+	init_tools.StartupDbMigration()
 
 	router := gin.Default()
 

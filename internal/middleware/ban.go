@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/eFournierRobert/themedia/internal/tools"
+	ban_tools "github.com/eFournierRobert/themedia/internal/tools/ban"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +14,7 @@ import (
 func BanCheck(context *gin.Context) {
 	uuid, _ := context.Get("userUUID")
 
-	if tools.IsUserBanned(uuid.(string)) {
+	if ban_tools.IsUserBanned(uuid.(string)) {
 		context.AbortWithStatus(http.StatusUnauthorized)
 	} else {
 		context.Next()

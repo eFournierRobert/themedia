@@ -1,8 +1,10 @@
-package tools
+package init_tools
 
 import (
 	"time"
 
+	dbmodels "github.com/eFournierRobert/themedia/internal/models/db"
+	"github.com/eFournierRobert/themedia/internal/tools"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -12,16 +14,16 @@ import (
 // If it isn't able to get access to the database, it will
 // panic and print the error.
 func StartupDbMigration() {
-	err := GetDb()
+	err := tools.GetDb()
 	if err != nil {
 		panic(err.Error())
 	}
 
-	DB.AutoMigrate(&Role{})
-	DB.AutoMigrate(&User{})
-	DB.AutoMigrate(&Ban{})
+	tools.DB.AutoMigrate(&dbmodels.Role{})
+	tools.DB.AutoMigrate(&dbmodels.User{})
+	tools.DB.AutoMigrate(&dbmodels.Ban{})
 
-	CheckIfFirstStartup(DB)
+	CheckIfFirstStartup(tools.DB)
 }
 
 // checkIfFirstStartup is the function that checks if the database
@@ -29,10 +31,10 @@ func StartupDbMigration() {
 // it creates them.
 func CheckIfFirstStartup(DB *gorm.DB) {
 	var count int64
-	DB.Model(&Role{}).Count(&count)
+	DB.Model(&dbmodels.Role{}).Count(&count)
 
 	if count == 0 {
-		roles := []*Role{
+		roles := []*dbmodels.Role{
 			{Name: "admin", UUID: uuid.NewString()},
 			{Name: "user", UUID: uuid.NewString()},
 		}
@@ -40,17 +42,17 @@ func CheckIfFirstStartup(DB *gorm.DB) {
 		DB.Create(roles)
 	}
 
-	var user User
+	var user dbmodels.User
 	DB.Select("id").Where("username = ?", "deleted").First(&user)
 
 	if user.ID == 0 {
-		DB.Create(&User{
+		DB.Create(&dbmodels.User{
 			Username: "deleted",
 			UUID:     uuid.NewString(),
 			RoleID:   2,
 		})
 
-		DB.Create(&Ban{
+		DB.Create(&dbmodels.Ban{
 			UserId:      1,
 			EndDatetime: time.Now().AddDate(1000, 0, 0),
 		})
