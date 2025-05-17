@@ -10,12 +10,41 @@ import (
 	"unicode/utf8"
 
 	"github.com/eFournierRobert/themedia/internal/handlers"
+	"github.com/eFournierRobert/themedia/internal/middleware"
 	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
 	ban_tools "github.com/eFournierRobert/themedia/internal/tools/ban"
 	user_tools "github.com/eFournierRobert/themedia/internal/tools/user"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func AddEndpointToRouter(router *gin.Engine) {
+	router.GET("/u/:uuid", GetUserWithUUID)
+	router.POST("/u", PostUser)
+	router.POST("/u/login", PostLogin)
+	router.POST("/u/logout", PostLogout)
+	router.DELETE(
+		"/u/:uuid",
+		middleware.Authorization,
+		middleware.BanCheck,
+		middleware.AdminOrLoggedInUserCheck,
+		DeleteUser,
+	)
+	router.PUT(
+		"/u/:uuid",
+		middleware.Authorization,
+		middleware.BanCheck,
+		middleware.AdminOrLoggedInUserCheck,
+		PutUser,
+	)
+	router.POST(
+		"/u/:uuid/ban",
+		middleware.Authorization,
+		middleware.BanCheck,
+		middleware.AdminCheck,
+		PostBan,
+	)
+}
 
 // PostUser is the function that handles the API POST /u.
 // It will create a new user in the database.
