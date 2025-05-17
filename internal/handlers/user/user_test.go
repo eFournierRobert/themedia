@@ -234,10 +234,29 @@ func TestPostLogout(t *testing.T) {
 	defer teardownSuite(t)
 
 	router, recorder := setupRouterAndRecorder()
-	dbNewUser := createTestUserInDatabase()
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/logout", nil),
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+	assert.Equal("Authorization", recorder.Result().Cookies()[0].Name)
+	assert.Empty(recorder.Result().Cookies()[0].Value)
+	assert.Greater(time.Now(), recorder.Result().Cookies()[0].Expires)
+}
+
+func TestDeleteUserWithValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	loginRecroder := httptest.NewRecorder()
+	dbNewAdmin := createTestAdminInDatabase()
 	user := jsonmodels.UserPost{
-		UUID:     dbNewUser.UUID,
-		Username: dbNewUser.Username,
+		UUID:     dbNewAdmin.UUID,
+		Username: dbNewAdmin.Username,
 		Password: "password",
 	}
 	jsonUser, err := json.Marshal(user)
@@ -246,20 +265,24 @@ func TestPostLogout(t *testing.T) {
 	}
 
 	router.ServeHTTP(
-		recorder,
+		loginRecroder,
 		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
 	)
 
-	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
-	assert.NotNil(recorder.Result().Cookies()[0])
+	http.SetCookie(recorder, loginRecroder.Result().Cookies()[0])
 
+	uuidToDelete := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
 	router.ServeHTTP(
 		recorder,
-		httptest.NewRequest("POST", "/u/logout", nil),
+		httptest.NewRequest("DELETE", "/u/"+uuidToDelete, nil),
 	)
 
 	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
-	assert.Empty(recorder.Result().Cookies())
+
+	var deletedUser dbmodels.User
+	tools.DB.Where("uuid = ?", uuidToDelete).First(&deletedUser)
+
+	assert.Equal(0, deletedUser.ID, "Deleted user should be deleted, but was found in the database")
 }
 
 func createTestUserInDatabase() *dbmodels.User {
@@ -267,6 +290,16 @@ func createTestUserInDatabase() *dbmodels.User {
 	password := "password"
 	var role dbmodels.Role
 	tools.DB.Where("name = ?", "user").First(&role)
+	newUser, _ := user_tools.CreateUser(&username, &password, &role)
+
+	return newUser
+}
+
+func createTestAdminInDatabase() *dbmodels.User {
+	username := "the user"
+	password := "password"
+	var role dbmodels.Role
+	tools.DB.Where("name = ?", "admin").First(&role)
 	newUser, _ := user_tools.CreateUser(&username, &password, &role)
 
 	return newUser
