@@ -29,7 +29,9 @@ func CreateBan(userUUID string, endDatetime time.Time) error {
 // is currently banned. Will return true if yes and false if not.
 func IsUserBanned(userUUID string) bool {
 	var ban dbmodels.Ban
-	tools.DB.Where("end_datetime >= ?", time.Now()).First(&ban)
+	tools.DB.Table("bans").Select(
+		"bans.id",
+	).Where("bans.end_datetime >= ? AND users.uuid = ?", time.Now(), userUUID).Joins("JOIN users ON users.id = bans.user_id").First(&ban)
 
 	return ban.ID != 0
 }

@@ -7,6 +7,7 @@ import (
 	dbmodels "github.com/eFournierRobert/themedia/internal/models/db"
 	"github.com/eFournierRobert/themedia/internal/tools"
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateBanWithValidUser(t *testing.T) {
@@ -30,14 +31,11 @@ func TestCreateBanWithInvalidUser(t *testing.T) {
 }
 
 func TestIsUserBanned(t *testing.T) {
+	assert.New(t)
 	teardownSuite := init_tools.SetupDatabase(t)
 	defer teardownSuite(t)
 
-	b := IsUserBanned(*getDeletedUserUUID())
-
-	if !b {
-		t.Errorf("Banned user %s is not seen as banned", *getDeletedUserUUID())
-	}
+	assert.True(t, IsUserBanned(*getDeletedUserUUID()))
 }
 
 func getDeletedUserUUID() *string {

@@ -6,10 +6,12 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	dbmodels "github.com/eFournierRobert/themedia/internal/models/db"
 	jsonmodels "github.com/eFournierRobert/themedia/internal/models/json"
 	"github.com/eFournierRobert/themedia/internal/tools"
+	ban_tools "github.com/eFournierRobert/themedia/internal/tools/ban"
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
 	user_tools "github.com/eFournierRobert/themedia/internal/tools/user"
 	"github.com/gin-gonic/gin"
@@ -149,6 +151,125 @@ func TestGetInvalidUserWithUUID(t *testing.T) {
 		httptest.NewRequest("GET", "/u/"+uuid, nil),
 	)
 	assert.Equal(http.StatusNotFound, recorder.Code, "HTTP code should be not found")
+}
+
+func TestPostValidLogin(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	dbNewUser := createTestUserInDatabase()
+	user := jsonmodels.UserPost{
+		UUID:     dbNewUser.UUID,
+		Username: dbNewUser.Username,
+		Password: "password",
+	}
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		t.Errorf("Couldn't turn the user into json. Got %s", err.Error())
+	}
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+	assert.NotNil(recorder.Result().Cookies()[0])
+}
+
+func TestPostLoginWithBannedUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	dbNewUser := createTestUserInDatabase()
+	user := jsonmodels.UserPost{
+		UUID:     dbNewUser.UUID,
+		Username: dbNewUser.Username,
+		Password: "password",
+	}
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		t.Errorf("Couldn't turn the user into json. Got %s", err.Error())
+	}
+
+	ban_tools.CreateBan(dbNewUser.UUID, time.Now().Add(time.Hour))
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	assert.Equal(http.StatusUnauthorized, recorder.Code, "HTTP code should be unauthorized")
+}
+
+func TestPostLoginWithDeletedUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	user := jsonmodels.UserPost{
+		Username: "deleted",
+	}
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		t.Errorf("Couldn't turn the user into json. Got %s", err.Error())
+	}
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	assert.Equal(http.StatusUnauthorized, recorder.Code, "HTTP code should be unauthorized")
+}
+
+func TestPostLogout(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	dbNewUser := createTestUserInDatabase()
+	user := jsonmodels.UserPost{
+		UUID:     dbNewUser.UUID,
+		Username: dbNewUser.Username,
+		Password: "password",
+	}
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		t.Errorf("Couldn't turn the user into json. Got %s", err.Error())
+	}
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+	assert.NotNil(recorder.Result().Cookies()[0])
+
+	router.ServeHTTP(
+		recorder,
+		httptest.NewRequest("POST", "/u/logout", nil),
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+	assert.Empty(recorder.Result().Cookies())
+}
+
+func createTestUserInDatabase() *dbmodels.User {
+	username := "the user"
+	password := "password"
+	var role dbmodels.Role
+	tools.DB.Where("name = ?", "user").First(&role)
+	newUser, _ := user_tools.CreateUser(&username, &password, &role)
+
+	return newUser
 }
 
 func setupRouterAndRecorder() (*gin.Engine, *httptest.ResponseRecorder) {
