@@ -252,29 +252,14 @@ func TestDeleteUserWithValidUser(t *testing.T) {
 	defer teardownSuite(t)
 
 	router, recorder := setupRouterAndRecorder()
-	loginRecroder := httptest.NewRecorder()
-	dbNewAdmin := createTestAdminInDatabase()
-	user := jsonmodels.UserPost{
-		UUID:     dbNewAdmin.UUID,
-		Username: dbNewAdmin.Username,
-		Password: "password",
-	}
-	jsonUser, err := json.Marshal(user)
-	if err != nil {
-		t.Errorf("Couldn't turn the user into json. Got %s", err.Error())
-	}
-
-	router.ServeHTTP(
-		loginRecroder,
-		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
-	)
-
-	http.SetCookie(recorder, loginRecroder.Result().Cookies()[0])
+	adminCookie := getAdminAuthCookie(router)
 
 	uuidToDelete := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	req := httptest.NewRequest("DELETE", "/u/"+uuidToDelete, nil)
+	req.AddCookie(adminCookie)
 	router.ServeHTTP(
 		recorder,
-		httptest.NewRequest("DELETE", "/u/"+uuidToDelete, nil),
+		req,
 	)
 
 	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
@@ -282,7 +267,25 @@ func TestDeleteUserWithValidUser(t *testing.T) {
 	var deletedUser dbmodels.User
 	tools.DB.Where("uuid = ?", uuidToDelete).First(&deletedUser)
 
-	assert.Equal(0, deletedUser.ID, "Deleted user should be deleted, but was found in the database")
+	assert.Zero(deletedUser.ID, "Deleted user should be deleted, but was found in the database")
+}
+
+func getAdminAuthCookie(router *gin.Engine) *http.Cookie {
+	loginRecorder := httptest.NewRecorder()
+	dbNewAdmin := createTestAdminInDatabase()
+	user := jsonmodels.UserPost{
+		UUID:     dbNewAdmin.UUID,
+		Username: dbNewAdmin.Username,
+		Password: "password",
+	}
+	jsonUser, _ := json.Marshal(user)
+
+	router.ServeHTTP(
+		loginRecorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	return loginRecorder.Result().Cookies()[0]
 }
 
 func createTestUserInDatabase() *dbmodels.User {
