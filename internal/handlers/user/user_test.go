@@ -270,12 +270,210 @@ func TestDeleteUserWithValidUser(t *testing.T) {
 	assert.Zero(deletedUser.ID, "Deleted user should be deleted, but was found in the database")
 }
 
+func TestDeleteWithInvalidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	userCookie := getUserAuthCookie(router)
+
+	uuidToDelete := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	req := httptest.NewRequest("DELETE", "/u/"+uuidToDelete, nil)
+	req.AddCookie(userCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusUnauthorized, recorder.Code, "HTTP code should be unauthorized")
+
+	var user dbmodels.User
+	tools.DB.Where("uuid = ?", uuidToDelete).First(&user)
+
+	assert.NotZero(user.ID, "User shouldn't have been deleted from database")
+}
+
+func TestPutUserWithValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	userCookie := getUserAuthCookie(router)
+	var user dbmodels.User
+	tools.DB.Last(&user)
+
+	modifiedJsonUser := jsonmodels.UserPost{
+		Username: "New username",
+		Bio:      user.Bio,
+	}
+	jsonUser, _ := json.Marshal(modifiedJsonUser)
+
+	uuidToModify := user.UUID
+	req := httptest.NewRequest("PUT", "/u/"+uuidToModify, strings.NewReader(string(jsonUser)))
+	req.AddCookie(userCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+
+	tools.DB.Where("uuid = ?", user.UUID).First(&user)
+	assert.Equal(modifiedJsonUser.Username, user.Username, "New username has not been set")
+	assert.Equal(modifiedJsonUser.Bio, user.Bio, "Bio shouldn't have changed")
+}
+
+func TestPutUserWithNewRoleAndInvalidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	userCookie := getUserAuthCookie(router)
+	var user dbmodels.User
+	tools.DB.Last(&user)
+	adminRole := getAdminRole()
+
+	modifiedJsonUser := jsonmodels.UserPost{
+		Role: adminRole.Name,
+	}
+	jsonUser, _ := json.Marshal(modifiedJsonUser)
+
+	uuidToModify := user.UUID
+	req := httptest.NewRequest("PUT", "/u/"+uuidToModify, strings.NewReader(string(jsonUser)))
+	req.AddCookie(userCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusForbidden, recorder.Code, "HTTP code should be forbidden")
+
+	tools.DB.Where("uuid = ?", user.UUID).First(&user)
+	assert.NotEqual(adminRole.ID, user.RoleID, "Role should not have been updated in the database")
+}
+
+func TestPutUserWithNewRoleAndValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	adminCookie := getAdminAuthCookie(router)
+	user := createTestUserInDatabase()
+	adminRole := getAdminRole()
+
+	modifiedJsonUser := jsonmodels.UserPost{
+		Role: adminRole.Name,
+	}
+	jsonUser, _ := json.Marshal(modifiedJsonUser)
+
+	uuidToModify := user.UUID
+	req := httptest.NewRequest("PUT", "/u/"+uuidToModify, strings.NewReader(string(jsonUser)))
+	req.AddCookie(adminCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+
+	tools.DB.Where("uuid = ?", user.UUID).First(&user)
+	assert.Equal(adminRole.ID, user.RoleID, "Role have been updated in the database")
+}
+
+func TestPutUserWithNewPasswordAndValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	userCookie := getUserAuthCookie(router)
+	var user dbmodels.User
+	tools.DB.Last(&user)
+
+	modifiedJsonUser := jsonmodels.UserPost{
+		Password: "new password",
+	}
+	jsonUser, _ := json.Marshal(modifiedJsonUser)
+
+	uuidToModify := user.UUID
+	req := httptest.NewRequest("PUT", "/u/"+uuidToModify, strings.NewReader(string(jsonUser)))
+	req.AddCookie(userCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+
+	var updatedUser dbmodels.User
+	tools.DB.Where("uuid = ?", user.UUID).First(&updatedUser)
+	assert.NotEqual(user.PasswordHash, updatedUser.PasswordHash, "Password should have been updated in the database")
+}
+
+func TestPutUserWithAnotherUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	userCookie := getUserAuthCookie(router)
+	var user dbmodels.User
+	tools.DB.Last(&user)
+	otherUser := createTestUserInDatabase()
+
+	modifiedJsonUser := jsonmodels.UserPost{
+		Bio: "new bio",
+	}
+	jsonUser, _ := json.Marshal(modifiedJsonUser)
+
+	uuidToModify := otherUser.UUID
+	req := httptest.NewRequest("PUT", "/u/"+uuidToModify, strings.NewReader(string(jsonUser)))
+	req.AddCookie(userCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusUnauthorized, recorder.Code, "HTTP code should be unauthorized")
+
+	tools.DB.Where("uuid = ?", otherUser.UUID).First(&otherUser)
+	assert.NotEqual(otherUser.Bio, modifiedJsonUser.Bio, "Bio should not have been updated in the database")
+}
+
 func getAdminAuthCookie(router *gin.Engine) *http.Cookie {
 	loginRecorder := httptest.NewRecorder()
 	dbNewAdmin := createTestAdminInDatabase()
 	user := jsonmodels.UserPost{
 		UUID:     dbNewAdmin.UUID,
 		Username: dbNewAdmin.Username,
+		Password: "password",
+	}
+	jsonUser, _ := json.Marshal(user)
+
+	router.ServeHTTP(
+		loginRecorder,
+		httptest.NewRequest("POST", "/u/login", strings.NewReader(string(jsonUser))),
+	)
+
+	return loginRecorder.Result().Cookies()[0]
+}
+
+func getAdminRole() *dbmodels.Role {
+	var role dbmodels.Role
+	tools.DB.Where("name = ?", "admin").First(&role)
+	return &role
+}
+
+func getUserAuthCookie(router *gin.Engine) *http.Cookie {
+	loginRecorder := httptest.NewRecorder()
+	dbNewUser := createTestUserInDatabase()
+	user := jsonmodels.UserPost{
+		UUID:     dbNewUser.UUID,
+		Username: dbNewUser.Username,
 		Password: "password",
 	}
 	jsonUser, _ := json.Marshal(user)
