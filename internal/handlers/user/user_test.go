@@ -444,6 +444,60 @@ func TestPutUserWithAnotherUser(t *testing.T) {
 	assert.NotEqual(otherUser.Bio, modifiedJsonUser.Bio, "Bio should not have been updated in the database")
 }
 
+func TestPostBanWithValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	adminCookie := getAdminAuthCookie(router)
+	banBody := jsonmodels.Ban{
+		EndDatetime: time.Now().Add(time.Hour * 3),
+	}
+	jsonBan, _ := json.Marshal(banBody)
+
+	uuidToBan := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	req := httptest.NewRequest("POST", "/u/"+uuidToBan+"/ban", strings.NewReader(string(jsonBan)))
+	req.AddCookie(adminCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusOK, recorder.Code, "HTTP code should be OK")
+
+	var ban dbmodels.Ban
+	tools.DB.Last(&ban)
+	assert.Equal(uint(3), ban.UserId, "User should be banned in the database")
+}
+
+func TestPostBanWithInvalidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownSuite := init_tools.SetupDatabase(t)
+	defer teardownSuite(t)
+
+	router, recorder := setupRouterAndRecorder()
+	adminCookie := getUserAuthCookie(router)
+	banBody := jsonmodels.Ban{
+		EndDatetime: time.Now().Add(time.Hour * 3),
+	}
+	jsonBan, _ := json.Marshal(banBody)
+
+	uuidToBan := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	req := httptest.NewRequest("POST", "/u/"+uuidToBan+"/ban", strings.NewReader(string(jsonBan)))
+	req.AddCookie(adminCookie)
+	router.ServeHTTP(
+		recorder,
+		req,
+	)
+
+	assert.Equal(http.StatusUnauthorized, recorder.Code, "HTTP code should be unauthorized")
+
+	var ban dbmodels.Ban
+	tools.DB.Last(&ban)
+	assert.NotEqual(uint(3), ban.UserId, "User should not be banned in the database")
+}
+
 func getAdminAuthCookie(router *gin.Engine) *http.Cookie {
 	loginRecorder := httptest.NewRecorder()
 	dbNewAdmin := createTestAdminInDatabase()
