@@ -19,6 +19,7 @@ type User struct {
 	RoleID       uint
 	Bio          string
 	Bans         []Ban
+	Posts []Post
 }
 
 // FullUser is the struct responsible to store the return value

@@ -19,6 +19,7 @@ func StartupDbMigration() {
 		panic(err.Error())
 	}
 
+	tools.DB.AutoMigrate(&dbmodels.Post{})
 	tools.DB.AutoMigrate(&dbmodels.Role{})
 	tools.DB.AutoMigrate(&dbmodels.User{})
 	tools.DB.AutoMigrate(&dbmodels.Ban{})
