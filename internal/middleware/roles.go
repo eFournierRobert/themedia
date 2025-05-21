@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/eFournierRobert/themedia/internal/tools"
+	user_tools "github.com/eFournierRobert/themedia/internal/tools/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +16,7 @@ func AdminCheck(context *gin.Context) {
 		context.AbortWithStatus(http.StatusUnauthorized)
 	}
 
-	if tools.IsUserAdmin(userUUID.(string)) {
+	if user_tools.IsUserAdmin(userUUID.(string)) {
 		context.Next()
 	} else {
 		context.AbortWithStatus(http.StatusUnauthorized)
@@ -32,7 +32,7 @@ func AdminOrLoggedInUserCheck(context *gin.Context) {
 		context.AbortWithStatus(http.StatusUnauthorized)
 	}
 
-	if userUUID.(string) == context.Param("uuid") || tools.IsUserAdmin(userUUID.(string)) {
+	if userUUID.(string) == context.Param("uuid") || user_tools.IsUserAdmin(userUUID.(string)) {
 		context.Next()
 	} else {
 		context.AbortWithStatus(http.StatusUnauthorized)

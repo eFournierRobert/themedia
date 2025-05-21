@@ -5,9 +5,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/eFournierRobert/themedia/internal/handlers"
-	"github.com/eFournierRobert/themedia/internal/middleware"
-	"github.com/eFournierRobert/themedia/internal/tools"
+	user_handlers "github.com/eFournierRobert/themedia/internal/handlers/user"
+	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -27,35 +26,12 @@ func main() {
 	fmt.Println("Starting themedia API...")
 
 	loadEnvVars()
-	tools.StartupDbMigration()
+	init_tools.StartupDbMigration()
 
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
-	router.GET("/u/:uuid", handlers.GetUserWithUUID)
-	router.POST("/u", handlers.PostUser)
-	router.POST("/u/login", handlers.PostLogin)
-	router.POST("/u/logout", handlers.PostLogout)
-	router.DELETE(
-		"/u/:uuid",
-		middleware.Authorization,
-		middleware.BanCheck,
-		middleware.AdminOrLoggedInUserCheck,
-		handlers.DeleteUser,
-	)
-	router.PUT(
-		"/u/:uuid",
-		middleware.Authorization,
-		middleware.BanCheck,
-		middleware.AdminOrLoggedInUserCheck,
-		handlers.PutUser,
-	)
-	router.POST(
-		"/u/:uuid/ban",
-		middleware.Authorization,
-		middleware.BanCheck,
-		middleware.AdminCheck,
-		handlers.PostBan,
-	)
+	user_handlers.AddEndpointsToRouter(router)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")

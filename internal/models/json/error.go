@@ -1,6 +1,6 @@
 // Package models is the package that contains
 // all the structs that will be returned in JSON.
-package models
+package jsonmodels
 
 // ErrorResponse is the struct used
 // to return an error message after an error

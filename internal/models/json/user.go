@@ -1,6 +1,6 @@
 // Package models is the package that contains
 // all the structs that will be returned in JSON.
-package models
+package jsonmodels
 
 // UserPost is the struct used to deserialize
 // the request body for a new user.
@@ -9,7 +9,7 @@ type UserPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Bio      string `json:"bio"`
-	RoleUUID string `json:"roleUuid"`
+	Role     string `json:"role"`
 }
 
 // UserResponse is the struct used to serialize
