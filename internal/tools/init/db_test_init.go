@@ -43,6 +43,20 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 	}
 	db.Create(users)
 
+	testTitles := []string{
+		"Test post 1",
+		"Test post 2",
+		"Test post 3",
+	}
+	var parentTestPost uint = 1
+	posts := []*dbmodels.Post{
+		{UUID: "e3631cac-e80d-4908-b902-9e70492079f4", Title: &testTitles[0], Body: "This is the first test post", UserID: 2, PostID: nil},
+		{UUID: "8be57d3d-8a55-4bdc-b2e5-e13fe282a467", Title: &testTitles[1], Body: "This is the second test post", UserID: 3, PostID: nil},
+		{UUID: "56b757f0-35ec-4055-bf3c-22186a75a3a3", Title: &testTitles[2], Body: "This is the third test post", UserID: 4, PostID: nil},
+		{UUID: "a8399ae9-14e6-441b-814c-fe6ce983c8d4", Title: nil, Body: "This is a test answer", UserID: 4, PostID: &parentTestPost},
+	}
+	db.Create(posts)
+
 	tools.DB = db
 
 	// Delete the directory after test

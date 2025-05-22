@@ -48,10 +48,10 @@ func CreatePost(title *string, body *string, userUUID *string, parentPostUUID *s
 
 	newPost := dbmodels.Post{
 		UUID:   uuid.NewString(),
-		Title:  *title,
+		Title:  title,
 		Body:   *body,
 		UserID: userID,
-		PostID: *parentPostID,
+		PostID: parentPostID,
 	}
 	tools.DB.Create(&newPost)
 
