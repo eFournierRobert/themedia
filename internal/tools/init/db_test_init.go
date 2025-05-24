@@ -30,10 +30,7 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 	}
 
 	// Migrate tables and create dummy data
-	db.AutoMigrate(&dbmodels.Role{})
-	db.AutoMigrate(&dbmodels.User{})
-	db.AutoMigrate(&dbmodels.Ban{})
-	db.AutoMigrate(&dbmodels.Post{})
+	tableMigration(db)
 
 	CheckIfFirstStartup(db)
 
@@ -46,6 +43,13 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 	return func(t *testing.T) {
 		os.RemoveAll(tempDir)
 	}
+}
+
+func tableMigration(db *gorm.DB) {
+	db.AutoMigrate(&dbmodels.Role{})
+	db.AutoMigrate(&dbmodels.User{})
+	db.AutoMigrate(&dbmodels.Ban{})
+	db.AutoMigrate(&dbmodels.Post{})
 }
 
 func createUsers(db *gorm.DB) {
