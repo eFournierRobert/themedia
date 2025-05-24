@@ -33,6 +33,7 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 	db.AutoMigrate(&dbmodels.Role{})
 	db.AutoMigrate(&dbmodels.User{})
 	db.AutoMigrate(&dbmodels.Ban{})
+	db.AutoMigrate(&dbmodels.Post{})
 
 	CheckIfFirstStartup(db)
 

@@ -18,14 +18,14 @@ func GetPostByUUID(uuid *string) (*dbmodels.Post, error) {
 	return &post, nil
 }
 
-func GetAllPost(offset int, limit int) *[]dbmodels.Post {
+func GetAllPost(offset int, limit int) []dbmodels.Post {
 	if limit == 0 {
 		limit = 10
 	}
-	var postList []dbmodels.Post
-	tools.DB.Select("uuid", "title", "body", "user_id").Offset(offset).Limit(limit).Find(postList)
+	var postArray []dbmodels.Post
+	tools.DB.Select("uuid", "title", "body", "user_id").Offset(offset).Limit(limit).Find(&postArray)
 
-	return &postList
+	return postArray
 }
 
 func CreatePost(title *string, body *string, userUUID *string, parentPostUUID *string) (*dbmodels.Post, error) {
