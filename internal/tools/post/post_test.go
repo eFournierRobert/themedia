@@ -29,12 +29,9 @@ func TestFindPostByInvalidUUID(t *testing.T) {
 
 	UUIDToGet := "pomme"
 
-	post, err := GetPostByUUID(&UUIDToGet)
-	if err == nil {
-		t.Errorf("Post with invalid UUID was found")
-	}
+	_, err := GetPostByUUID(&UUIDToGet)
 
-	assert.Empty(post)
+	assert.Error(err)
 }
 
 func TestFindAllPostWithNoLimitOrOffset(t *testing.T) {
@@ -65,4 +62,65 @@ func TestFindAllPostWithOffsetBiggerThanNumberOfPost(t *testing.T) {
 	posts := GetAllPost(4, 0)
 
 	assert.Len(posts, 0)
+}
+
+func TestCreateValidPost(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	title := "new post title"
+	body := "I broke my Arch install"
+	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
+	post, err := CreatePost(&title, &body, &userUUID, nil)
+	if err != nil {
+		t.Errorf("Got unknown error %s", err.Error())
+	}
+
+	assert.Equal(title, *post.Title)
+	assert.Equal(body, post.Body)
+}
+
+func TestCreatePostWithInvalidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	title := "new post title"
+	body := "I broke my Arch install"
+	userUUID := "womp womp"
+	_, err := CreatePost(&title, &body, &userUUID, nil)
+
+	assert.Error(err)
+}
+
+func TestCreateAnswerPost(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	body := "This is the greatest post ever made"
+	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
+	parentPostUUID := "e3631cac-e80d-4908-b902-9e70492079f4"
+	post, err := CreatePost(nil, &body, &userUUID, &parentPostUUID)
+	if err != nil {
+		t.Errorf("Got unknown error %s", err.Error())
+	}
+
+	assert.Nil(post.Title)
+	assert.Equal(body, post.Body)
+	assert.NotEmpty(post.PostID)
+}
+
+func TestCreateAnswerPostWithInvalidParentPostUUID(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	body := "This is the greatest post ever made"
+	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
+	parentPostUUID := "Bestest of best post"
+	_, err := CreatePost(nil, &body, &userUUID, &parentPostUUID)
+
+	assert.Error(err)
 }

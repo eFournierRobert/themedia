@@ -44,7 +44,9 @@ func CreatePost(title *string, body *string, userUUID *string, parentPostUUID *s
 	var userID uint
 	var user dbmodels.User
 	tools.DB.Where("uuid = ?", userUUID).First(&user)
-	userID = user.ID
+	if user.ID == 0 {
+		return nil, errors.New("user with given UUID does not exist")
+	}
 
 	newPost := dbmodels.Post{
 		UUID:   uuid.NewString(),

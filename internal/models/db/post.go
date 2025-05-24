@@ -9,4 +9,5 @@ type Post struct {
 	Body   string
 	UserID uint
 	PostID *uint
+	Post   []Post
 }
