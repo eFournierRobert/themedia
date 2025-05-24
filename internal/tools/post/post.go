@@ -63,9 +63,16 @@ func CreatePost(title *string, body *string, userUUID *string, parentPostUUID *s
 func DeletePost(uuid *string) error {
 	var post dbmodels.Post
 	tools.DB.Where("uuid = ?", *uuid).First(&post)
-
 	if post.ID == 0 {
 		return errors.New("post was not found")
+	}
+
+	var answeredPost []dbmodels.Post
+	tools.DB.Select("id").Where("post_id = ?", post.ID).Find(&answeredPost)
+	if len(answeredPost) != 0 {
+		for _, post := range answeredPost[:] {
+			tools.DB.Unscoped().Delete(post)
+		}
 	}
 
 	tools.DB.Unscoped().Delete(&post)

@@ -3,6 +3,8 @@ package post_tools
 import (
 	"testing"
 
+	dbmodels "github.com/eFournierRobert/themedia/internal/models/db"
+	"github.com/eFournierRobert/themedia/internal/tools"
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
 	"github.com/stretchr/testify/assert"
 )
@@ -121,6 +123,35 @@ func TestCreateAnswerPostWithInvalidParentPostUUID(t *testing.T) {
 	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
 	parentPostUUID := "Bestest of best post"
 	_, err := CreatePost(nil, &body, &userUUID, &parentPostUUID)
+
+	assert.Error(err)
+}
+
+func TestDeleteValidPost(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	UUID := "e3631cac-e80d-4908-b902-9e70492079f4"
+	DeletePost(&UUID)
+
+	var post dbmodels.Post
+	tools.DB.Where("uuid = ?", UUID).First(&post)
+
+	assert.Empty(post)
+
+	// Check if answer post was deleted too
+	tools.DB.Where("uuid = ?", "a8399ae9-14e6-441b-814c-fe6ce983c8d4").First(&post)
+	assert.Empty(post)
+}
+
+func TestDeleteInvalidPost(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	UUID := "coconut"
+	err := DeletePost(&UUID)
 
 	assert.Error(err)
 }
