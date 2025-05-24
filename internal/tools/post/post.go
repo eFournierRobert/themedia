@@ -34,7 +34,7 @@ func GetAllPostFromUser(userUUID *string, offset int, limit int) []dbmodels.Post
 		"posts.title",
 		"posts.body",
 		"posts.user_id",
-	).Joins("JOIN users ON posts.user_id = users.id").Where("users.uuid = ?", *userUUID).Find(&postArray)
+	).Joins("JOIN users ON posts.user_id = users.id").Where("users.uuid = ?", *userUUID).Offset(offset).Limit(limit).Find(&postArray)
 
 	return postArray
 }
