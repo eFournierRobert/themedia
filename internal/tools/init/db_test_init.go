@@ -37,13 +37,27 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 
 	CheckIfFirstStartup(db)
 
+	createUsers(db)
+	createPosts(db)
+
+	tools.DB = db
+
+	// Delete the directory after test
+	return func(t *testing.T) {
+		os.RemoveAll(tempDir)
+	}
+}
+
+func createUsers(db *gorm.DB) {
 	users := []*dbmodels.User{
 		{UUID: "de0c8142-5973-478b-9287-37ff25e4e332", Username: "John Doe", PasswordHash: []byte("test"), RoleID: 1, Bio: "Bio of John Doe"},
 		{UUID: "35ad671e-0fa0-4829-ae8e-37043d95fc33", Username: "Bright Horizon", PasswordHash: []byte("test"), RoleID: 2, Bio: "Bio of Bright Horizon"},
 		{UUID: "dd1614ee-e26f-4949-ba0f-fd8d7df031d2", Username: "Tux Gnu", PasswordHash: []byte("test"), RoleID: 2, Bio: "Bio of Tux Gnu"},
 	}
 	db.Create(users)
+}
 
+func createPosts(db *gorm.DB) {
 	testTitles := []string{
 		"Test post 1",
 		"Test post 2",
@@ -55,13 +69,8 @@ func SetupDatabase(t *testing.T) func(t *testing.T) {
 		{UUID: "8be57d3d-8a55-4bdc-b2e5-e13fe282a467", Title: &testTitles[1], Body: "This is the second test post", UserID: 3, PostID: nil},
 		{UUID: "56b757f0-35ec-4055-bf3c-22186a75a3a3", Title: &testTitles[2], Body: "This is the third test post", UserID: 4, PostID: nil},
 		{UUID: "a8399ae9-14e6-441b-814c-fe6ce983c8d4", Title: nil, Body: "This is a test answer", UserID: 4, PostID: &parentTestPost},
+		{UUID: "1eb075f3-448d-4111-83d9-4f757eea373f", Title: nil, Body: "This is another test answer", UserID: 3, PostID: &parentTestPost},
 	}
 	db.Create(posts)
 
-	tools.DB = db
-
-	// Delete the directory after test
-	return func(t *testing.T) {
-		os.RemoveAll(tempDir)
-	}
 }

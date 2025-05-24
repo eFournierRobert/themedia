@@ -17,10 +17,8 @@ func TestFindValidPostByUUID(t *testing.T) {
 	UUIDToGet := "8be57d3d-8a55-4bdc-b2e5-e13fe282a467"
 
 	post, err := GetPostByUUID(&UUIDToGet)
-	if err != nil {
-		t.Errorf("Post was not found. Got %s", err.Error())
-	}
 
+	assert.NoError(err)
 	assert.Equal(UUIDToGet, post.UUID)
 }
 
@@ -43,7 +41,7 @@ func TestFindAllPostWithNoLimitOrOffset(t *testing.T) {
 
 	posts := GetAllPost(0, 0)
 
-	assert.Len(posts, 4)
+	assert.Len(posts, 5)
 }
 
 func TestFindAllPostWithALimitOfTwoAndAnOffsetOf2(t *testing.T) {
@@ -61,7 +59,7 @@ func TestFindAllPostWithOffsetBiggerThanNumberOfPost(t *testing.T) {
 	teardownTest := init_tools.SetupDatabase(t)
 	defer teardownTest(t)
 
-	posts := GetAllPost(4, 0)
+	posts := GetAllPost(5, 0)
 
 	assert.Len(posts, 0)
 }
@@ -75,10 +73,8 @@ func TestCreateValidPost(t *testing.T) {
 	body := "I broke my Arch install"
 	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
 	post, err := CreatePost(&title, &body, &userUUID, nil)
-	if err != nil {
-		t.Errorf("Got unknown error %s", err.Error())
-	}
 
+	assert.NoError(err)
 	assert.Equal(title, *post.Title)
 	assert.Equal(body, post.Body)
 }
@@ -105,10 +101,8 @@ func TestCreateAnswerPost(t *testing.T) {
 	userUUID := "de0c8142-5973-478b-9287-37ff25e4e332"
 	parentPostUUID := "e3631cac-e80d-4908-b902-9e70492079f4"
 	post, err := CreatePost(nil, &body, &userUUID, &parentPostUUID)
-	if err != nil {
-		t.Errorf("Got unknown error %s", err.Error())
-	}
 
+	assert.NoError(err)
 	assert.Nil(post.Title)
 	assert.Equal(body, post.Body)
 	assert.NotEmpty(post.PostID)
@@ -154,4 +148,30 @@ func TestDeleteInvalidPost(t *testing.T) {
 	err := DeletePost(&UUID)
 
 	assert.Error(err)
+}
+
+func TestGetValidPostThread(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	parentUUID := "e3631cac-e80d-4908-b902-9e70492079f4"
+	thread, err := GetPostThread(&parentUUID, 0, 0)
+
+	assert.NoError(err)
+	assert.Len(thread, 2)
+	assert.Equal("a8399ae9-14e6-441b-814c-fe6ce983c8d4", thread[0].UUID)
+	assert.Equal("1eb075f3-448d-4111-83d9-4f757eea373f", thread[1].UUID)
+}
+
+func TestGetPostThreadFromInvalidParentPost(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	parentUUID := "Fraise"
+	thread, err := GetPostThread(&parentUUID, 0, 0)
+
+	assert.Error(err)
+	assert.Nil(thread)
 }
