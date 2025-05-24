@@ -164,6 +164,18 @@ func TestGetValidPostThread(t *testing.T) {
 	assert.Equal("1eb075f3-448d-4111-83d9-4f757eea373f", thread[1].UUID)
 }
 
+func TestGetPostThreadFromParentPostWithoutAnswers(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	parentUUID := "8be57d3d-8a55-4bdc-b2e5-e13fe282a467"
+	thread, err := GetPostThread(&parentUUID, 0, 0)
+
+	assert.NoError(err)
+	assert.Len(thread, 0)
+}
+
 func TestGetPostThreadFromInvalidParentPost(t *testing.T) {
 	assert := assert.New(t)
 	teardownTest := init_tools.SetupDatabase(t)
