@@ -39,6 +39,26 @@ func GetAllPostFromUser(userUUID *string, offset int, limit int) []dbmodels.Post
 	return postArray
 }
 
+func GetPostThread(parentPostUUID *string, offset int, limit int) ([]dbmodels.Post, error) {
+	limitCheck(&limit)
+	var parentPost dbmodels.Post
+	tools.DB.Select("id").Where("uuid = ?", *parentPostUUID).First(&parentPost)
+	if parentPost.ID == 0 {
+		return nil, errors.New("parent post was not found")
+	}
+
+	var postArray []dbmodels.Post
+	tools.DB.Table("posts").Select(
+		"uuid",
+		"title",
+		"body",
+		"user_id",
+		"post_id",
+	).Where("post_id = ?", parentPost.ID).Offset(offset).Limit(limit).Find(&postArray)
+
+	return postArray, nil
+}
+
 func CreatePost(title *string, body *string, userUUID *string, parentPostUUID *string) (*dbmodels.Post, error) {
 	var parentPostID *uint = nil
 
