@@ -187,3 +187,25 @@ func TestGetPostThreadFromInvalidParentPost(t *testing.T) {
 	assert.Error(err)
 	assert.Nil(thread)
 }
+
+func TestGetPostFromValidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	userUUID := "35ad671e-0fa0-4829-ae8e-37043d95fc33"
+	posts := GetAllPostFromUser(&userUUID, 0, 0)
+
+	assert.Len(posts, 2)
+}
+
+func TestGetPostFromInvalidUser(t *testing.T) {
+	assert := assert.New(t)
+	teardownTest := init_tools.SetupDatabase(t)
+	defer teardownTest(t)
+
+	userUUID := "Poire"
+	posts := GetAllPostFromUser(&userUUID, 0, 0)
+
+	assert.Len(posts, 0)
+}
