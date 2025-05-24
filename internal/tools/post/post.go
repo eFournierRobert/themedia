@@ -19,11 +19,22 @@ func GetPostByUUID(uuid *string) (*dbmodels.Post, error) {
 }
 
 func GetAllPost(offset int, limit int) []dbmodels.Post {
-	if limit == 0 {
-		limit = 10
-	}
+	limitCheck(&limit)
 	var postArray []dbmodels.Post
 	tools.DB.Select("uuid", "title", "body", "user_id").Offset(offset).Limit(limit).Find(&postArray)
+
+	return postArray
+}
+
+func GetAllPostFromUser(userUUID *string, offset int, limit int) []dbmodels.Post {
+	limitCheck(&limit)
+	var postArray []dbmodels.Post
+	tools.DB.Table("posts").Select(
+		"posts.uuid",
+		"posts.title",
+		"posts.body",
+		"posts.user_id",
+	).Joins("JOIN users ON posts.user_id = users.id").Where("users.uuid = ?", *userUUID).Find(&postArray)
 
 	return postArray
 }
@@ -77,4 +88,10 @@ func DeletePost(uuid *string) error {
 
 	tools.DB.Unscoped().Delete(&post)
 	return nil
+}
+
+func limitCheck(limit *int) {
+	if *limit == 0 {
+		*limit = 10
+	}
 }
