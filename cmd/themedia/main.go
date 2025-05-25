@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 
+	post_handlers "github.com/eFournierRobert/themedia/internal/handlers/post"
 	user_handlers "github.com/eFournierRobert/themedia/internal/handlers/user"
 	init_tools "github.com/eFournierRobert/themedia/internal/tools/init"
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,7 @@ func main() {
 	router := gin.New()
 
 	user_handlers.AddEndpointsToRouter(router)
+	post_handlers.AddEndpointsToRouter(router)
 
 	fmt.Println("API started!")
 	router.Run("localhost:8080")

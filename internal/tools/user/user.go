@@ -172,3 +172,13 @@ func UpdateUser(uuid string, user *jsonmodels.UserPost) error {
 	tools.DB.Model(&updatedUser).Updates(updatedUser)
 	return nil
 }
+
+func FindUserUUIDWithID(id uint) (*string, error) {
+	var user dbmodels.User
+	tools.DB.Select("uuid").Where("id = ?", id).First(&user)
+	if user.UUID == "" {
+		return nil, errors.New("user was not found")
+	}
+
+	return &user.UUID, nil
+}
